@@ -1,0 +1,18 @@
+{
+  "author": "dterbah",
+  "description": "Description of the project",
+  "version": "1.0.0",
+  "entry": "main.go",
+  "license": "MIT",
+  "scripts": {
+    "build": "go build",
+    "clean": "go clean",
+    "fmt": "go fmt ./...",
+    "run": "go run main.go",
+    "test": "go test ./...",
+    "tidy": "go mod tidy"
+  },
+  "name": "go-logic",
+  "git": "github.com/dterbah/go-logic",
+  "dependencies": {}
+}
