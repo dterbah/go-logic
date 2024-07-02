@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	logic "github.com/dterbah/go-logic/src"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,6 +33,14 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	lexer := logic.NewLexer(*logicExpression)
+	tokens := lexer.Tokenize()
+
+	tokens.ForEach(func(element logic.Token, index int) {
+		fmt.Print(element.String(), " ")
+	})
+	fmt.Println()
 
 	fmt.Println(*generateGraph, *generateTruthTable)
 }
