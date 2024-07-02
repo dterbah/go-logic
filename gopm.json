@@ -8,7 +8,7 @@
     "build": "go build",
     "clean": "go clean",
     "fmt": "go fmt ./...",
-    "run": "go run main.go",
+    "start": "go run main.go",
     "test": "go test ./...",
     "tidy": "go mod tidy"
   },
