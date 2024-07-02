@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"fmt"
 	"unicode"
 
 	"github.com/dterbah/gods/list"
@@ -39,7 +40,11 @@ Create a new Lexer
 */
 func NewLexer(input string) *Lexer {
 	comparator := func(a, b Token) int {
-		return 0
+		if a.Type == b.Type && a.Value == b.Value {
+			return 0
+		}
+
+		return -1
 	}
 
 	list := arraylist.New(comparator)
@@ -49,7 +54,7 @@ func NewLexer(input string) *Lexer {
 /*
 Parse the input of the Lexer and create Token for each elements
 */
-func (lexer *Lexer) Tokenize() list.List[Token] {
+func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 	for lexer.pos < len(lexer.input) {
 		char := lexer.input[lexer.pos]
 
@@ -69,10 +74,11 @@ func (lexer *Lexer) Tokenize() list.List[Token] {
 			lexer.tokens.Add(Token{Type: NOT, Value: "NOT"})
 			lexer.pos++
 		case char == '(':
-			lexer.tokens.Add(Token{Type: RPAREN, Value: "("})
+			lexer.tokens.Add(Token{Type: LPAREN, Value: "("})
 			lexer.pos++
 		case char == ')':
-			lexer.tokens.Add(Token{Type: LPAREN, Value: ")"})
+			lexer.tokens.Add(Token{Type: RPAREN, Value: ")"})
+			lexer.pos++
 		default:
 			if unicode.IsLetter(rune(char)) {
 				start := lexer.pos
@@ -81,13 +87,13 @@ func (lexer *Lexer) Tokenize() list.List[Token] {
 				}
 				lexer.tokens.Add(Token{Type: VAR, Value: lexer.input[start:lexer.pos]})
 			} else {
-				lexer.tokens.Add(Token{Type: ILLEGAL, Value: string(char)})
-				lexer.pos++
+				// error, char not found
+				return nil, fmt.Errorf("error when analysing the char %s", string(char))
 			}
 		}
 	}
 
-	return lexer.tokens
+	return lexer.tokens, nil
 }
 
 /*
