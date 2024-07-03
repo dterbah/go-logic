@@ -48,8 +48,8 @@ func main() {
 	result := parser.Parse()
 
 	variables := make(map[string]bool)
-	variables["a"] = false
-	variables["b"] = false
+	variables["a"] = true
+	variables["b"] = true
 	fmt.Println(result.Eval(variables))
 
 	fmt.Println(*generateGraph, *generateTruthTable)

@@ -31,9 +31,13 @@ func TestTokenize(t *testing.T) {
 		input   string
 		isError bool
 	}{
-		{"test with illegal token", arraylist.New(mockTokenCompare), "a+b", true},
-		{"test with an AND expression", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}), "a&b", false},
-		{"test with an OR expression", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: OR, Value: "OR"}, Token{Type: VAR, Value: "b"}), "a|b", false},
+		{"test with illegal char", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}), "a=b", true},
+		{"test with an AND expression with &", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}), "a&b", false},
+		{"test with an AND expression with .", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}), "a.b", false},
+		{"test with an AND expression with ^", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}), "a^b", false},
+		{"test with an OR expression with |", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: OR, Value: "OR"}, Token{Type: VAR, Value: "b"}), "a|b", false},
+		{"test with an OR expression with v", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: OR, Value: "OR"}, Token{Type: VAR, Value: "b"}), "avb", false},
+		{"test with an OR expression with +", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: OR, Value: "OR"}, Token{Type: VAR, Value: "b"}), "a+b", false},
 		{"test with an NOT expression", arraylist.New(mockTokenCompare, Token{Type: NOT, Value: "NOT"}, Token{Type: VAR, Value: "a"}), "!a", false},
 		{"test with parenthesis", arraylist.New(mockTokenCompare, Token{Type: LPAREN, Value: "("}, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}, Token{Type: RPAREN, Value: ")"}), "(a&b)", false},
 		{"test with an AND expression", arraylist.New(mockTokenCompare, Token{Type: NOT, Value: "NOT"}, Token{Type: VAR, Value: "a"}), "!a", false},

@@ -1,6 +1,8 @@
 package logic
 
 import (
+	"fmt"
+
 	"github.com/dterbah/gods/list"
 )
 
@@ -15,17 +17,17 @@ func NewParser(tokens list.List[Token]) *Parser {
 }
 
 func (parser *Parser) Parse() Expression {
-	return parser.ParseExpression()
+	return parser.parseExpression()
 }
 
-func (parser *Parser) ParseExpression() Expression {
+func (parser *Parser) parseExpression() Expression {
 	var expr Expression
 
 	token := parser.peekToken()
 
 	if token.Is(NOT) {
 		parser.pos++
-		return NewNotExpression(parser.ParseExpression())
+		return NewNotExpression(parser.parseExpression())
 	} else if token.Is(VAR) {
 		expr = NewVarExpression(token.Value)
 		parser.pos++
@@ -35,7 +37,29 @@ func (parser *Parser) ParseExpression() Expression {
 			return expr
 		} else if nextToken.Is(OR) {
 			parser.pos++
-			return NewOrExpression(expr, parser.ParseExpression())
+			return NewOrExpression(expr, parser.parseExpression())
+		} else if nextToken.Is(AND) {
+			parser.pos++
+			return NewAndExpression(expr, parser.parseExpression())
+		}
+	} else if token.Is(LPAREN) {
+		parser.pos++
+		expr = parser.parseExpression()
+		nextToken := parser.peekToken()
+		if !nextToken.Is(RPAREN) {
+			panic(fmt.Sprintf("error when analyzing the input. Received %s, waiting %s", nextToken.Value, ")"))
+		}
+
+		parser.pos++
+		nextToken = parser.peekToken()
+		if nextToken.Is(EOF) {
+			return expr
+		} else if nextToken.Is(OR) {
+			parser.pos++
+			return NewOrExpression(expr, parser.parseExpression())
+		} else if nextToken.Is(AND) {
+			parser.pos++
+			return NewAndExpression(expr, parser.parseExpression())
 		}
 	}
 
