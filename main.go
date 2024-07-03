@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// todo: Implement dot graph
 func setupLogger() {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:          true,

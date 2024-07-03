@@ -8,6 +8,6 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=dterbah_go-logic&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=dterbah_go-logic)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=dterbah_go-logic&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=dterbah_go-logic)
 
-This CLI is used to analyze boolean expressions
+This CLI is used to analyze boolean expressions.
 
 <img src="./assets/logo.webp" width="150" />
