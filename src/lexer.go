@@ -13,13 +13,13 @@ type TokenType int
 // Alphabet of tokens
 const (
 	ILLEGAL TokenType = iota
-	EOF
-	VAR    // variable
-	AND    // &
-	OR     // |
-	NOT    // !
-	LPAREN // (
-	RPAREN // )
+	EOF               // When no token available
+	VAR               // variable
+	AND               // &, ., ^
+	OR                // |, v, +
+	NOT               // !
+	LPAREN            // (
+	RPAREN            // )
 )
 
 // Defines the Token struct
@@ -57,35 +57,30 @@ Parse the input of the Lexer and create Token for each elements
 func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 	for lexer.pos < len(lexer.input) {
 		char := lexer.input[lexer.pos]
-
 		if unicode.IsSpace(rune(char)) {
 			lexer.pos++
 			continue
 		}
 
-		switch {
-		case char == '&':
+		if char == '&' || char == '.' || char == '^' {
 			lexer.tokens.Add(Token{Type: AND, Value: "AND"})
 			lexer.pos++
-		case char == '|':
+		} else if char == '|' || char == '+' || char == 'v' { // todo, v is not working
 			lexer.tokens.Add(Token{Type: OR, Value: "OR"})
 			lexer.pos++
-		case char == '!':
+		} else if char == '!' {
 			lexer.tokens.Add(Token{Type: NOT, Value: "NOT"})
 			lexer.pos++
-		case char == '(':
+		} else if char == '(' {
 			lexer.tokens.Add(Token{Type: LPAREN, Value: "("})
 			lexer.pos++
-		case char == ')':
+		} else if char == ')' {
 			lexer.tokens.Add(Token{Type: RPAREN, Value: ")"})
 			lexer.pos++
-		default:
+		} else {
 			if unicode.IsLetter(rune(char)) {
-				start := lexer.pos
-				for lexer.pos < len(lexer.input) && unicode.IsLetter(rune(lexer.input[lexer.pos])) {
-					lexer.pos++
-				}
-				lexer.tokens.Add(Token{Type: VAR, Value: lexer.input[start:lexer.pos]})
+				lexer.tokens.Add(Token{Type: VAR, Value: string(char)})
+				lexer.pos++
 			} else {
 				// error, char not found
 				return nil, fmt.Errorf("error when analysing the char %s", string(char))
@@ -101,4 +96,11 @@ Return the string representation of the token
 */
 func (token Token) String() string {
 	return token.Value
+}
+
+/*
+Return true if the current token has the type passed in parameter, else false
+*/
+func (token Token) Is(tokenType TokenType) bool {
+	return token.Type == tokenType
 }

@@ -35,12 +35,21 @@ func main() {
 	}
 
 	lexer := logic.NewLexer(*logicExpression)
-	tokens := lexer.Tokenize()
+	tokens, err := lexer.Tokenize()
 
-	tokens.ForEach(func(element logic.Token, index int) {
-		fmt.Print(element.String(), " ")
-	})
-	fmt.Println()
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	parser := logic.NewParser(tokens)
+
+	result := parser.Parse()
+
+	variables := make(map[string]bool)
+	variables["a"] = false
+	variables["b"] = false
+	fmt.Println(result.Eval(variables))
 
 	fmt.Println(*generateGraph, *generateTruthTable)
 }
