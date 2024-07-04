@@ -17,5 +17,30 @@ func TestNewParser(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	// todo implement
+	variables := make(map[string]bool)
+	mockTokenComparator := func(a, b Token) int {
+		if a.Type == b.Type && a.Value == b.Value {
+			return 0
+		}
+
+		return 1
+	}
+
+	tests := []struct {
+		name      string
+		tokens    []Token
+		variables map[string]bool
+		isPanic   bool
+		result    bool
+	}{
+		{"test with a single variable", []Token{Token{Type: VAR, Value: "a"}}, map[string]bool{"a": true}, false, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tokens := arraylist.New(mockTokenComparator, test.tokens...)
+			parser := NewParser(tokens)
+
+		})
+	}
 }

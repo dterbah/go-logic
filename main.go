@@ -45,7 +45,12 @@ func main() {
 
 	parser := logic.NewParser(tokens)
 
-	result := parser.Parse()
+	result, err := parser.Parse()
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	variables := make(map[string]bool)
 	variables["a"] = true

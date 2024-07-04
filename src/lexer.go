@@ -16,7 +16,8 @@ const (
 	EOF               // When no token available
 	VAR               // variable
 	AND               // &, ., ^
-	OR                // |, v, +
+	OR                // |, v
+	XOR               // +
 	NOT               // !
 	LPAREN            // (
 	RPAREN            // )
@@ -55,6 +56,10 @@ func NewLexer(input string) *Lexer {
 Parse the input of the Lexer and create Token for each elements
 */
 func (lexer *Lexer) Tokenize() (list.List[Token], error) {
+	if len(lexer.input) == 0 {
+		return nil, fmt.Errorf("the input should not be empty")
+	}
+
 	for lexer.pos < len(lexer.input) {
 		char := lexer.input[lexer.pos]
 		if unicode.IsSpace(rune(char)) {
@@ -65,7 +70,7 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 		if char == '&' || char == '.' || char == '^' {
 			lexer.tokens.Add(Token{Type: AND, Value: "AND"})
 			lexer.pos++
-		} else if char == '|' || char == '+' || char == 'v' { // todo, v is not working
+		} else if char == '|' || char == 'v' { // todo, v is not working
 			lexer.tokens.Add(Token{Type: OR, Value: "OR"})
 			lexer.pos++
 		} else if char == '!' {
@@ -77,6 +82,8 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 		} else if char == ')' {
 			lexer.tokens.Add(Token{Type: RPAREN, Value: ")"})
 			lexer.pos++
+		} else if char == '+' {
+			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
 		} else {
 			if unicode.IsLetter(rune(char)) {
 				lexer.tokens.Add(Token{Type: VAR, Value: string(char)})
