@@ -25,7 +25,7 @@ func main() {
 	setupLogger()
 	logicExpression := flag.String("e", "", "Logic expression to evaluate")
 	generateGraph := flag.Bool("g", false, "Generate the grap representation of the expression")
-	generateTruthTable := flag.Bool("t", false, "Generate truth table")
+	generateTruthTable := flag.Bool("t", true, "Generate truth table")
 	printHelp := flag.Bool("h", false, "Display list of operator")
 	flag.Parse()
 
