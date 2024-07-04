@@ -54,7 +54,7 @@ func main() {
 
 	variables := make(map[string]bool)
 	variables["a"] = true
-	variables["b"] = true
+	variables["b"] = false
 	fmt.Println(result.Eval(variables))
 
 	fmt.Println(*generateGraph, *generateTruthTable)

@@ -67,9 +67,25 @@ func (parser *Parser) parseNot() (Expression, error) {
 	parser.pos++
 	nextToken := parser.peekToken()
 
+	var expr Expression
+
 	if nextToken.Is(VAR) {
-		expr, err := parser.parseVar(nextToken)
-		return NewNotExpression(expr), err
+		expr = NewNotExpression(NewVarExpression(nextToken.Value))
+		parser.pos++
+		nextToken := parser.peekToken()
+		if nextToken.Is(OR) {
+			return parser.parseOr(expr)
+		} else if nextToken.Is(AND) {
+			return parser.parseAnd(expr)
+		} else if nextToken.Is(IMPLIES) {
+			return parser.parseImplies(expr)
+		} else if nextToken.Is(EOF) {
+			return expr, nil
+		} else if nextToken.Is(RPAREN) {
+			return expr, nil
+		} else {
+			return nil, fmt.Errorf("you should not have a %s after a ! expression", nextToken.Value)
+		}
 	} else if nextToken.Is(LPAREN) {
 		expr, err := parser.parseExpression()
 		return NewNotExpression(expr), err
@@ -93,21 +109,6 @@ func (parser *Parser) parseAnd(left Expression) (Expression, error) {
 	}
 
 	return NewAndExpression(left, expr), nil
-
-	// if nextToken.Is(VAR) {
-	// 	expr, err := parser.parseVar(nextToken)
-	// 	return NewAndExpression(left, expr), err
-	// } else if nextToken.Is(NOT) {
-	// 	expr, err := parser.parseNot()
-	// 	return NewAndExpression(left, expr), err
-	// } else if nextToken.Is(LPAREN) {
-	// 	expr, err := parser.parseExpression()
-	// 	return NewAndExpression(left, expr), err
-	// } else if nextToken.Is(EOF) {
-	// 	return nil, fmt.Errorf("you should have either a variable, a !, or a ( after a and operator")
-	// } else {
-	// 	return nil, fmt.Errorf("you should not have a %s after a and operator", nextToken.Value)
-	// }
 }
 
 /*

@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func mockComparator(a, b Token) int { return 0 }
+
 func TestNewParser(t *testing.T) {
 	assert := assert.New(t)
 	parser := NewParser(arraylist.New[Token](func(a, b Token) int { return 0 }))
@@ -16,31 +18,121 @@ func TestNewParser(t *testing.T) {
 	assert.NotNil(parser)
 }
 
-func TestParse(t *testing.T) {
-	// variables := make(map[string]bool)
-	// mockTokenComparator := func(a, b Token) int {
-	// 	if a.Type == b.Type && a.Value == b.Value {
-	// 		return 0
-	// 	}
+func TestParseNot(t *testing.T) {
+	assert := assert.New(t)
 
-	// 	return 1
-	// }
+	tests := []struct {
+		name       string
+		expression string
+		isError    bool
+		variables  map[string]bool
+		result     bool
+	}{
+		{"test simple not operation", "!a", false, map[string]bool{"a": true}, false},
+		{"test not operator with & after", "!&", true, map[string]bool{"a": true}, false},
+		{"test not operator with -> after", "!->", true, map[string]bool{"a": true}, false},
+		{"test not operator with | after", "!|", true, map[string]bool{"a": true}, false},
+		{"test not operator with ) after", "!)", true, map[string]bool{"a": true}, false},
+		{"test simple not operation", "!a", false, map[string]bool{"a": false}, true},
+	}
 
-	// tests := []struct {
-	// 	name      string
-	// 	tokens    []Token
-	// 	variables map[string]bool
-	// 	isPanic   bool
-	// 	result    bool
-	// }{
-	// 	{"test with a single variable", []Token{Token{Type: VAR, Value: "a"}}, map[string]bool{"a": true}, false, true},
-	// }
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lexer := NewLexer(test.expression)
+			tokens, _ := lexer.Tokenize()
+			parser := NewParser(tokens)
 
-	// for _, test := range tests {
-	// 	t.Run(test.name, func(t *testing.T) {
-	// 		tokens := arraylist.New(mockTokenComparator, test.tokens...)
-	// 		parser := NewParser(tokens)
+			expr, err := parser.Parse()
 
-	// 	})
-	// }
+			if test.isError {
+				assert.NotNil(err, test.name)
+			} else {
+				assert.Nil(err)
+				result := expr.Eval(test.variables)
+				assert.Equal(result, test.result, test.name)
+			}
+		})
+	}
+}
+
+func TestParseAnd(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		name       string
+		expression string
+		isError    bool
+		variables  map[string]bool
+		result     bool
+	}{
+		{"test simple a and a", "a^a", false, map[string]bool{"a": true}, true},
+		{"test and operator with & after", "&&", true, map[string]bool{"a": true}, false},
+		{"test and operator with -> after", "&->", true, map[string]bool{"a": true}, false},
+		{"test and operator with | after", "&|", true, map[string]bool{"a": true}, false},
+		{"test and operator with ) after", "&)", true, map[string]bool{"a": true}, false},
+		{"test simple a and b", "a^b", false, map[string]bool{"a": false, "b": true}, false},
+		{"test simple a and b 2", "a^b", false, map[string]bool{"a": false, "b": true}, false},
+		{"test simple !a and b", "!a^b", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple !a and !b", "!a^!b", false, map[string]bool{"a": false, "b": true}, false},
+		{"test (a and !b)", "(a^!b)", false, map[string]bool{"a": false, "b": true}, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lexer := NewLexer(test.expression)
+			tokens, _ := lexer.Tokenize()
+			parser := NewParser(tokens)
+
+			expr, err := parser.Parse()
+
+			if test.isError {
+				assert.NotNil(err, test.name)
+			} else {
+				assert.Nil(err)
+				result := expr.Eval(test.variables)
+				assert.Equal(result, test.result, test.name)
+			}
+		})
+	}
+}
+
+func TestParseOr(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		name       string
+		expression string
+		isError    bool
+		variables  map[string]bool
+		result     bool
+	}{
+		{"test simple a or a", "ava", false, map[string]bool{"a": true}, true},
+		{"test or operator with & after", "v&", true, map[string]bool{"a": true}, false},
+		{"test or operator with -> after", "v->", true, map[string]bool{"a": true}, false},
+		{"test or operator with | after", "v|", true, map[string]bool{"a": true}, false},
+		{"test or operator with ) after", "v)", true, map[string]bool{"a": true}, false},
+		{"test simple a or b", "avb", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple a or b 2", "avb", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple !a or b ", "!avb", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple !a or !b", "!av!b", false, map[string]bool{"a": true, "b": true}, false},
+		{"test simple !a or !b or (a or !b)", "!av!bv(av!b)", false, map[string]bool{"a": true, "b": true}, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lexer := NewLexer(test.expression)
+			tokens, _ := lexer.Tokenize()
+			parser := NewParser(tokens)
+
+			expr, err := parser.Parse()
+
+			if test.isError {
+				assert.NotNil(err, test.name)
+			} else {
+				assert.Nil(err)
+				result := expr.Eval(test.variables)
+				assert.Equal(result, test.result, test.name)
+			}
+		})
+	}
 }
