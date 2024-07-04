@@ -64,48 +64,38 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 
 	for lexer.pos < len(lexer.input) {
 		char := lexer.input[lexer.pos]
-		if unicode.IsSpace(rune(char)) {
+
+		switch {
+		case unicode.IsSpace(rune(char)):
 			lexer.pos++
 			continue
-		}
-
-		if isAndOperator(char) {
+		case isAndOperator(char):
 			lexer.tokens.Add(Token{Type: AND, Value: "AND"})
-			lexer.pos++
-		} else if isOrOperator(char) { // todo, v is not working
+		case isOrOperator(char):
 			lexer.tokens.Add(Token{Type: OR, Value: "OR"})
-			lexer.pos++
-		} else if isNotOperator(char) {
+		case isNotOperator(char):
 			lexer.tokens.Add(Token{Type: NOT, Value: "NOT"})
-			lexer.pos++
-		} else if char == '(' {
+		case char == '(':
 			lexer.tokens.Add(Token{Type: LPAREN, Value: "("})
-			lexer.pos++
-		} else if char == ')' {
+		case char == ')':
 			lexer.tokens.Add(Token{Type: RPAREN, Value: ")"})
-			lexer.pos++
-		} else if isXOROperator(char) {
+		case isXOROperator(char):
 			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
-			lexer.pos++
-		} else if isNumber(char) {
+		case isNumber(char):
 			lexer.tokens.Add(Token{Type: NUMBER, Value: string(char)})
+		case char == '-':
 			lexer.pos++
-		} else if char == '-' {
-			lexer.pos++
-			if lexer.input[lexer.pos] != '>' {
-				return nil, fmt.Errorf("error when anaysing implies operator, found %s, expected '>'", string(lexer.input[lexer.pos]))
+			if lexer.pos >= len(lexer.input) || lexer.input[lexer.pos] != '>' {
+				return nil, fmt.Errorf("error when analyzing implies operator, found %s, expected '>'", string(lexer.input[lexer.pos]))
 			}
 			lexer.tokens.Add(Token{Type: IMPLIES, Value: "->"})
-			lexer.pos++
-		} else {
-			if unicode.IsLetter(rune(char)) {
-				lexer.tokens.Add(Token{Type: VAR, Value: string(char)})
-				lexer.pos++
-			} else {
-				// error, char not found
-				return nil, fmt.Errorf("error when analysing the char %s", string(char))
-			}
+		case unicode.IsLetter(rune(char)):
+			lexer.tokens.Add(Token{Type: VAR, Value: string(char)})
+		default:
+			return nil, fmt.Errorf("error when analyzing the char %s", string(char))
 		}
+
+		lexer.pos++
 	}
 
 	return lexer.tokens, nil
