@@ -100,18 +100,11 @@ func (runner Runner) help() {
 
 }
 
-func (runner Runner) generateTruthTable(expr Expression, variables set.Set[string], simplifiedExpr Expression) {
+func createTruthTableData(expr Expression, variables set.Set[string], simplifiedExpr Expression) [][]string {
 	nbrVariables := variables.Size()
 	iterations := int(math.Pow(2, float64(nbrVariables)))
 
 	data := [][]string{}
-	headers := append(variables.ToArray(), runner.input)
-	if simplifiedExpr != nil {
-		headers = append(headers, fmt.Sprintf("Simplified : %s", simplifiedExpr.String()))
-	}
-
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(headers)
 
 	for i := 0; i < iterations; i++ {
 		variablesMap := make(map[string]bool)
@@ -135,9 +128,24 @@ func (runner Runner) generateTruthTable(expr Expression, variables set.Set[strin
 		data = append(data, tableRow)
 	}
 
+	return data
+}
+
+func (runner Runner) generateTruthTable(expr Expression, variables set.Set[string], simplifiedExpr Expression) {
+	headers := append(variables.ToArray(), runner.input)
+	if simplifiedExpr != nil {
+		headers = append(headers, fmt.Sprintf("Simplified : %s", simplifiedExpr.String()))
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(headers)
+
+	data := createTruthTableData(expr, variables, simplifiedExpr)
+
 	// display the truth table
 	for _, v := range data {
 		table.Append(v)
 	}
+
 	table.Render()
 }
