@@ -43,6 +43,8 @@ func TestTokenize(t *testing.T) {
 		{"test with spaces", arraylist.New(mockTokenCompare, Token{Type: NOT, Value: "NOT"}, Token{Type: VAR, Value: "a"}), " ! a ", false},
 		{"test with valid implies operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: IMPLIES, Value: "->"}, Token{Type: VAR, Value: "b"}), " a->b ", false},
 		{"test with invalid implies operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: IMPLIES, Value: "->"}, Token{Type: VAR, Value: "b"}), " a-b ", true},
+		{"test with valid implies operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: XOR, Value: "XOR"}, Token{Type: VAR, Value: "b"}), " a+b ", false},
+		{"test with empty input", nil, "", true},
 	}
 
 	for _, test := range tests {

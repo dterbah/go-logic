@@ -177,3 +177,44 @@ func TestParseImplies(t *testing.T) {
 		})
 	}
 }
+
+func TestParserXOR(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		name       string
+		expression string
+		isError    bool
+		variables  map[string]bool
+		result     bool
+	}{
+		{"test simple a + a", "a+a", false, map[string]bool{"a": true}, false},
+		{"test + operator with & after", "+&", true, map[string]bool{"a": true}, false},
+		{"test + operator with + after", "+", true, map[string]bool{"a": true}, false},
+		{"test + operator with | after", "+|", true, map[string]bool{"a": true}, false},
+		{"test + operator with ) after", "+)", true, map[string]bool{"a": true}, false},
+		{"test simple a + b", "a+b", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple a + b 2", "a+b", false, map[string]bool{"a": true, "b": true}, false},
+		{"test simple !a + b ", "!a+b", false, map[string]bool{"a": false, "b": true}, false},
+		{"test simple !a + !b", "!a+!b", false, map[string]bool{"a": true, "b": false}, true},
+		{"test simple !a + !b + (a or !b)", "!a+!b+(av!b)", false, map[string]bool{"a": true, "b": true}, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lexer := NewLexer(test.expression)
+			tokens, _ := lexer.Tokenize()
+			parser := NewParser(tokens)
+
+			expr, err := parser.Parse()
+
+			if test.isError {
+				assert.NotNil(err, test.name)
+			} else {
+				assert.Nil(err)
+				result := expr.Eval(test.variables)
+				assert.Equal(result, test.result, test.name)
+			}
+		})
+	}
+}
