@@ -135,6 +135,15 @@ func (orExpr *OrExpression) Simplify() Expression {
 		return NewNumberExpression(1)
 	}
 
+	// Complementarity
+	if value, ok := orExpr.right.(*NotExpression); ok && value.expr.equal(orExpr.left) {
+		return NewNumberExpression(1)
+	}
+
+	if value, ok := orExpr.left.(*NotExpression); ok && value.expr.equal(orExpr.right) {
+		return NewNumberExpression(1)
+	}
+
 	return NewOrExpression(orExpr.left.Simplify(), orExpr.right.Simplify())
 }
 
@@ -194,6 +203,15 @@ func (andExpr *AndExpression) Simplify() Expression {
 	}
 
 	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 0 {
+		return NewNumberExpression(0)
+	}
+
+	// Complementarity
+	if value, ok := andExpr.right.(*NotExpression); ok && value.expr.equal(andExpr.left) {
+		return NewNumberExpression(0)
+	}
+
+	if value, ok := andExpr.left.(*NotExpression); ok && value.expr.equal(andExpr.right) {
 		return NewNumberExpression(0)
 	}
 
