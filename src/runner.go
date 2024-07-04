@@ -67,13 +67,19 @@ func (runner Runner) Run() {
 		return
 	}
 
-	variables2 := make(map[string]bool)
-	variables2["a"] = false
-	variables2["b"] = false
-	fmt.Println(result.Eval(variables2))
-
 	if runner.truthTable {
 		runner.generateTruthTable(result, *variables)
+	}
+
+	if runner.generateGraph {
+		fmt.Println("🚀 Dot Graph is being generated ...")
+		graph := GenerateDot(result)
+		err := os.WriteFile("graph.dot", []byte(graph), 0644)
+		if err != nil {
+			fmt.Println("Error when generating your dot graph")
+		} else {
+			fmt.Println("✅ Your graph is ready to be displayed !")
+		}
 	}
 }
 
