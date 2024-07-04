@@ -36,6 +36,7 @@ func NewRunner(input string, displayHelp bool, generateGraph bool, generateTruth
 Run the program
 */
 func (runner Runner) Run() {
+	var simplifiedExpr Expression
 	if runner.displayHelp {
 		runner.help()
 	}
@@ -69,17 +70,23 @@ func (runner Runner) Run() {
 		return
 	}
 
-	if runner.truthTable {
-		runner.generateTruthTable(result, *variables)
+	if runner.simplifyExpression {
+		simplifiedExpr = result.Simplify()
 	}
 
-	if runner.simplifyExpression {
-		fmt.Println(result.Simplify())
+	if runner.truthTable {
+		runner.generateTruthTable(result, *variables, simplifiedExpr)
 	}
 
 	if runner.generateGraph {
 		fmt.Println("🚀 Dot Graph is being generated ...")
-		graph := GenerateDot(result)
+		var graph string
+		if simplifiedExpr != nil {
+			graph = GenerateDot(simplifiedExpr)
+		} else {
+			graph = GenerateDot(result)
+		}
+
 		err := os.WriteFile("graph.dot", []byte(graph), 0644)
 		if err != nil {
 			fmt.Println("Error when generating your dot graph")
@@ -93,12 +100,15 @@ func (runner Runner) help() {
 
 }
 
-func (runner Runner) generateTruthTable(expr Expression, variables set.Set[string]) {
+func (runner Runner) generateTruthTable(expr Expression, variables set.Set[string], simplifiedExpr Expression) {
 	nbrVariables := variables.Size()
 	iterations := int(math.Pow(2, float64(nbrVariables)))
 
 	data := [][]string{}
 	headers := append(variables.ToArray(), runner.input)
+	if simplifiedExpr != nil {
+		headers = append(headers, fmt.Sprintf("Simplified : %s", simplifiedExpr.String()))
+	}
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader(headers)
@@ -117,6 +127,10 @@ func (runner Runner) generateTruthTable(expr Expression, variables set.Set[strin
 
 		result := expr.Eval(variablesMap)
 		tableRow = append(tableRow, boolutil.BoolToString(result))
+
+		if simplifiedExpr != nil {
+			tableRow = append(tableRow, boolutil.BoolToString(result))
+		}
 
 		data = append(data, tableRow)
 	}

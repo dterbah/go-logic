@@ -117,7 +117,25 @@ func (orExpr *OrExpression) Simplify() Expression {
 		return orExpr.right
 	}
 
-	return orExpr
+	// Identity
+	if value, ok := orExpr.right.(*NumberExpression); ok && value.value == 0 {
+		return orExpr.left
+	}
+
+	if value, ok := orExpr.left.(*NumberExpression); ok && value.value == 0 {
+		return orExpr.right
+	}
+
+	// Domination
+	if value, ok := orExpr.right.(*NumberExpression); ok && value.value == 1 {
+		return NewNumberExpression(1)
+	}
+
+	if value, ok := orExpr.left.(*NumberExpression); ok && value.value == 1 {
+		return NewNumberExpression(1)
+	}
+
+	return NewOrExpression(orExpr.left.Simplify(), orExpr.right.Simplify())
 }
 
 func (orExpr OrExpression) String() string {
@@ -160,7 +178,26 @@ func (andExpr *AndExpression) Simplify() Expression {
 	if andExpr.right.equal(andExpr.left) {
 		return andExpr.right
 	}
-	return andExpr
+
+	// Identity
+	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 1 {
+		return andExpr.left
+	}
+
+	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 1 {
+		return andExpr.right
+	}
+
+	// Domination
+	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 0 {
+		return NewNumberExpression(0)
+	}
+
+	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 0 {
+		return NewNumberExpression(0)
+	}
+
+	return NewAndExpression(andExpr.left.Simplify(), andExpr.right.Simplify()).Simplify()
 }
 
 func (andExpr AndExpression) String() string {
@@ -266,6 +303,14 @@ type NumberExpression struct {
 
 func NewNumberExpression(value int) *NumberExpression {
 	return &NumberExpression{value: value}
+}
+
+func (nbrExpr NumberExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*NumberExpression); ok {
+		return value.value == nbrExpr.value
+	}
+
+	return false
 }
 
 func (nbrExpr *NumberExpression) Eval(variables map[string]bool) bool {
