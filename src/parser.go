@@ -50,6 +50,8 @@ func (parser *Parser) parseVar(token Token) (Expression, error) {
 		return parser.parseAnd(expr)
 	} else if nextToken.Is(OR) {
 		return parser.parseOr(expr)
+	} else if nextToken.Is(IMPLIES) {
+		return parser.parseImplies(expr)
 	} else if nextToken.Is(RPAREN) {
 		return expr, nil
 	} else {
@@ -59,6 +61,7 @@ func (parser *Parser) parseVar(token Token) (Expression, error) {
 
 /*
 Parse NOT boolean expression
+bug when !a&!b
 */
 func (parser *Parser) parseNot() (Expression, error) {
 	parser.pos++
@@ -82,42 +85,52 @@ Parse AND boolean expression
 */
 func (parser *Parser) parseAnd(left Expression) (Expression, error) {
 	parser.pos++
-	nextToken := parser.peekToken()
 
-	if nextToken.Is(VAR) {
-		expr, err := parser.parseVar(nextToken)
-		return NewAndExpression(left, expr), err
-	} else if nextToken.Is(NOT) {
-		expr, err := parser.parseNot()
-		return NewAndExpression(left, expr), err
-	} else if nextToken.Is(LPAREN) {
-		expr, err := parser.parseExpression()
-		return NewAndExpression(left, expr), err
-	} else if nextToken.Is(EOF) {
+	expr, err := parser.Parse()
+
+	if err != nil {
 		return nil, fmt.Errorf("you should have either a variable, a !, or a ( after a and operator")
-	} else {
-		return nil, fmt.Errorf("you should not have a %s after a and operator", nextToken.Value)
 	}
+
+	return NewAndExpression(left, expr), nil
+
+	// if nextToken.Is(VAR) {
+	// 	expr, err := parser.parseVar(nextToken)
+	// 	return NewAndExpression(left, expr), err
+	// } else if nextToken.Is(NOT) {
+	// 	expr, err := parser.parseNot()
+	// 	return NewAndExpression(left, expr), err
+	// } else if nextToken.Is(LPAREN) {
+	// 	expr, err := parser.parseExpression()
+	// 	return NewAndExpression(left, expr), err
+	// } else if nextToken.Is(EOF) {
+	// 	return nil, fmt.Errorf("you should have either a variable, a !, or a ( after a and operator")
+	// } else {
+	// 	return nil, fmt.Errorf("you should not have a %s after a and operator", nextToken.Value)
+	// }
 }
 
+/*
+Parse OR boolean expression
+*/
 func (parser *Parser) parseOr(left Expression) (Expression, error) {
 	parser.pos++
-	nextToken := parser.peekToken()
-
-	if nextToken.Is(VAR) {
-		expr, err := parser.parseVar(nextToken)
-		return NewOrExpression(left, expr), err
-	} else if nextToken.Is(LPAREN) {
-		expr, err := parser.parseExpression()
-		return NewOrExpression(left, expr), err
-	} else if nextToken.Is(NOT) {
-		expr, err := parser.parseNot()
-		return NewOrExpression(left, expr), err
-	} else if nextToken.Is(EOF) {
+	expr, err := parser.Parse()
+	if err != nil {
 		return nil, fmt.Errorf("you should have either a variable or a ( after a or operator")
-	} else {
-		return nil, fmt.Errorf("you should not have a %s after a or operator", nextToken.Value)
 	}
+
+	return NewOrExpression(left, expr), nil
+}
+
+func (parser *Parser) parseImplies(left Expression) (Expression, error) {
+	parser.pos++
+
+	expr, err := parser.Parse()
+	if err != nil {
+		return nil, fmt.Errorf("you should have either a variable, a ( or a ! after implies operator")
+	}
+	return NewImpliesExpression(left, expr), err
 }
 
 /*

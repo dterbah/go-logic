@@ -43,6 +43,7 @@ func (orExpr *OrExpression) Eval(variables map[string]bool) bool {
 	return orExpr.left.Eval(variables) || orExpr.right.Eval(variables)
 }
 
+// And Expression API
 type AndExpression struct {
 	left, right Expression
 }
@@ -53,4 +54,20 @@ func NewAndExpression(left, right Expression) *AndExpression {
 
 func (andExpr *AndExpression) Eval(variables map[string]bool) bool {
 	return andExpr.left.Eval(variables) && andExpr.right.Eval(variables)
+}
+
+// Implies Expression API
+type ImpliesExpression struct {
+	left, right Expression
+}
+
+func NewImpliesExpression(left, right Expression) *ImpliesExpression {
+	return &ImpliesExpression{left: left, right: right}
+}
+
+func (impliesExpr *ImpliesExpression) Eval(variables map[string]bool) bool {
+	left := impliesExpr.left.Eval(variables)
+	right := impliesExpr.right.Eval(variables)
+
+	return !left || right
 }
