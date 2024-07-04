@@ -106,7 +106,17 @@ func (parser *Parser) parseExpression() (Expression, error) {
 		return nil, fmt.Errorf("you should close your expression when you use parenthesis")
 	}
 
-	return expr, err
+	// Either AND, XOR, OR, EOF after the right parenthesis
+
+	parser.pos++
+	nextToken = parser.peekToken()
+	if nextToken.Is(EOF) {
+		return expr, err
+	} else if nextToken.Is(AND) {
+		return parser.parseAnd(expr)
+	} else {
+		return nil, fmt.Errorf("you shoud not have a %s after a )", nextToken.Value)
+	}
 }
 
 // func (parser *Parser) parseExpression() Expression {
