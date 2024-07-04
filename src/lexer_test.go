@@ -41,6 +41,8 @@ func TestTokenize(t *testing.T) {
 		{"test with parenthesis", arraylist.New(mockTokenCompare, Token{Type: LPAREN, Value: "("}, Token{Type: VAR, Value: "a"}, Token{Type: AND, Value: "AND"}, Token{Type: VAR, Value: "b"}, Token{Type: RPAREN, Value: ")"}), "(a&b)", false},
 		{"test with an AND expression", arraylist.New(mockTokenCompare, Token{Type: NOT, Value: "NOT"}, Token{Type: VAR, Value: "a"}), "!a", false},
 		{"test with spaces", arraylist.New(mockTokenCompare, Token{Type: NOT, Value: "NOT"}, Token{Type: VAR, Value: "a"}), " ! a ", false},
+		{"test with valid implies operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: IMPLIES, Value: "->"}, Token{Type: VAR, Value: "b"}), " a->b ", false},
+		{"test with invalid implies operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: IMPLIES, Value: "->"}, Token{Type: VAR, Value: "b"}), " a-b ", true},
 	}
 
 	for _, test := range tests {

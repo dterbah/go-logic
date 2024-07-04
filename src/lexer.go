@@ -21,6 +21,7 @@ const (
 	NOT               // !
 	LPAREN            // (
 	RPAREN            // )
+	IMPLIES           // ->
 )
 
 // Defines the Token struct
@@ -84,6 +85,13 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 			lexer.pos++
 		} else if char == '+' {
 			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
+		} else if char == '-' {
+			lexer.pos++
+			if lexer.input[lexer.pos] != '>' {
+				return nil, fmt.Errorf("error when anaysing implies operator, found %s, expected '>'", string(lexer.input[lexer.pos]))
+			}
+			lexer.tokens.Add(Token{Type: IMPLIES, Value: "->"})
+			lexer.pos++
 		} else {
 			if unicode.IsLetter(rune(char)) {
 				lexer.tokens.Add(Token{Type: VAR, Value: string(char)})
