@@ -4,3 +4,4 @@ coverage*
 main
 .vscode
 graph.dot
+graph.png

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -8,9 +9,12 @@ import (
 	boolutil "github.com/dterbah/go-logic/src/utils"
 	"github.com/dterbah/gods/set"
 	comparator "github.com/dterbah/gods/utils"
+	"github.com/goccy/go-graphviz"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 )
+
+const DOT_GRAPH_IMAGE_PATH = "graph.png"
 
 /*
 Struct that will execute the main program
@@ -87,17 +91,35 @@ func (runner Runner) Run() {
 			graph = GenerateDot(result)
 		}
 
-		err := os.WriteFile("graph.dot", []byte(graph), 0644)
+		err := exportDotGraph(graph)
+
 		if err != nil {
-			fmt.Println("Error when generating your dot graph")
+			fmt.Println(err)
+			fmt.Println("❌ Error during the generation of graph")
 		} else {
-			fmt.Println("✅ Your graph is ready to be displayed !")
+			fmt.Println("✅ Graph created !")
 		}
 	}
 }
 
 func (runner Runner) help() {
 
+}
+
+func exportDotGraph(dotGraph string) error {
+	graph, err := graphviz.ParseBytes([]byte(dotGraph))
+
+	if err != nil {
+		return errors.New("error during the export of graph")
+	}
+
+	g := graphviz.New()
+
+	if err := g.RenderFilename(graph, graphviz.PNG, DOT_GRAPH_IMAGE_PATH); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func createTruthTableData(expr Expression, variables set.Set[string], simplifiedExpr Expression) [][]string {
