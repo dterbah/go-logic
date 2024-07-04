@@ -27,13 +27,7 @@ func main() {
 	generateGraph := flag.Bool("g", false, "Generate the grap representation of the expression")
 	generateTruthTable := flag.Bool("t", false, "Generate truth table")
 	printHelp := flag.Bool("h", false, "Display list of operator")
-
 	flag.Parse()
-
-	if *printHelp {
-		fmt.Println("Display help")
-		return
-	}
 
 	if *logicExpression == "" {
 		fmt.Println("The -e option is required.")
@@ -41,27 +35,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	lexer := logic.NewLexer(*logicExpression)
-	tokens, err := lexer.Tokenize()
-
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	parser := logic.NewParser(tokens)
-
-	result, err := parser.Parse()
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	variables := make(map[string]bool)
-	variables["a"] = false
-	variables["b"] = false
-	fmt.Println(result.Eval(variables))
-
-	fmt.Println(*generateGraph, *generateTruthTable)
+	runner := logic.NewRunner(*logicExpression, *printHelp, *generateGraph, *generateTruthTable)
+	runner.Run()
 }
