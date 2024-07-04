@@ -13,28 +13,21 @@ func mockComparator(a, b Token) int { return 0 }
 
 func TestNewParser(t *testing.T) {
 	assert := assert.New(t)
-	parser := NewParser(arraylist.New[Token](func(a, b Token) int { return 0 }))
+	parser := NewParser(arraylist.New[Token](mockComparator))
 
 	assert.NotNil(parser)
 }
 
-func TestParseNot(t *testing.T) {
-	assert := assert.New(t)
+type testCase struct {
+	name       string
+	expression string
+	isError    bool
+	variables  map[string]bool
+	result     bool
+}
 
-	tests := []struct {
-		name       string
-		expression string
-		isError    bool
-		variables  map[string]bool
-		result     bool
-	}{
-		{"test simple not operation", "!a", false, map[string]bool{"a": true}, false},
-		{"test not operator with & after", "!&", true, map[string]bool{"a": true}, false},
-		{"test not operator with -> after", "!->", true, map[string]bool{"a": true}, false},
-		{"test not operator with | after", "!|", true, map[string]bool{"a": true}, false},
-		{"test not operator with ) after", "!)", true, map[string]bool{"a": true}, false},
-		{"test simple not operation", "!a", false, map[string]bool{"a": false}, true},
-	}
+func runTestCases(t *testing.T, tests []testCase) {
+	assert := assert.New(t)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -55,16 +48,21 @@ func TestParseNot(t *testing.T) {
 	}
 }
 
-func TestParseAnd(t *testing.T) {
-	assert := assert.New(t)
+func TestParseNot(t *testing.T) {
+	tests := []testCase{
+		{"test simple not operation", "!a", false, map[string]bool{"a": true}, false},
+		{"test not operator with & after", "!&", true, map[string]bool{"a": true}, false},
+		{"test not operator with -> after", "!->", true, map[string]bool{"a": true}, false},
+		{"test not operator with | after", "!|", true, map[string]bool{"a": true}, false},
+		{"test not operator with ) after", "!)", true, map[string]bool{"a": true}, false},
+		{"test simple not operation", "!a", false, map[string]bool{"a": false}, true},
+	}
 
-	tests := []struct {
-		name       string
-		expression string
-		isError    bool
-		variables  map[string]bool
-		result     bool
-	}{
+	runTestCases(t, tests)
+}
+
+func TestParseAnd(t *testing.T) {
+	tests := []testCase{
 		{"test simple a and a", "a^a", false, map[string]bool{"a": true}, true},
 		{"test and operator with & after", "&&", true, map[string]bool{"a": true}, false},
 		{"test and operator with -> after", "&->", true, map[string]bool{"a": true}, false},
@@ -77,35 +75,11 @@ func TestParseAnd(t *testing.T) {
 		{"test (a and !b)", "(a^!b)", false, map[string]bool{"a": false, "b": true}, false},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			lexer := NewLexer(test.expression)
-			tokens, _ := lexer.Tokenize()
-			parser := NewParser(tokens)
-
-			expr, err := parser.Parse()
-
-			if test.isError {
-				assert.NotNil(err, test.name)
-			} else {
-				assert.Nil(err)
-				result := expr.Eval(test.variables)
-				assert.Equal(result, test.result, test.name)
-			}
-		})
-	}
+	runTestCases(t, tests)
 }
 
 func TestParseOr(t *testing.T) {
-	assert := assert.New(t)
-
-	tests := []struct {
-		name       string
-		expression string
-		isError    bool
-		variables  map[string]bool
-		result     bool
-	}{
+	tests := []testCase{
 		{"test simple a or a", "ava", false, map[string]bool{"a": true}, true},
 		{"test or operator with & after", "v&", true, map[string]bool{"a": true}, false},
 		{"test or operator with -> after", "v->", true, map[string]bool{"a": true}, false},
@@ -118,35 +92,11 @@ func TestParseOr(t *testing.T) {
 		{"test simple !a or !b or (a or !b)", "!av!bv(av!b)", false, map[string]bool{"a": true, "b": true}, true},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			lexer := NewLexer(test.expression)
-			tokens, _ := lexer.Tokenize()
-			parser := NewParser(tokens)
-
-			expr, err := parser.Parse()
-
-			if test.isError {
-				assert.NotNil(err, test.name)
-			} else {
-				assert.Nil(err)
-				result := expr.Eval(test.variables)
-				assert.Equal(result, test.result, test.name)
-			}
-		})
-	}
+	runTestCases(t, tests)
 }
 
 func TestParseImplies(t *testing.T) {
-	assert := assert.New(t)
-
-	tests := []struct {
-		name       string
-		expression string
-		isError    bool
-		variables  map[string]bool
-		result     bool
-	}{
+	tests := []testCase{
 		{"test simple a -> a", "a->a", false, map[string]bool{"a": true}, true},
 		{"test -> operator with & after", "->&", true, map[string]bool{"a": true}, false},
 		{"test -> operator with -> after", "->->", true, map[string]bool{"a": true}, false},
@@ -159,35 +109,11 @@ func TestParseImplies(t *testing.T) {
 		{"test simple !a -> !b -> (a or !b)", "!av!bv(av!b)", false, map[string]bool{"a": true, "b": true}, true},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			lexer := NewLexer(test.expression)
-			tokens, _ := lexer.Tokenize()
-			parser := NewParser(tokens)
-
-			expr, err := parser.Parse()
-
-			if test.isError {
-				assert.NotNil(err, test.name)
-			} else {
-				assert.Nil(err)
-				result := expr.Eval(test.variables)
-				assert.Equal(result, test.result, test.name)
-			}
-		})
-	}
+	runTestCases(t, tests)
 }
 
 func TestParserXOR(t *testing.T) {
-	assert := assert.New(t)
-
-	tests := []struct {
-		name       string
-		expression string
-		isError    bool
-		variables  map[string]bool
-		result     bool
-	}{
+	tests := []testCase{
 		{"test simple a + a", "a+a", false, map[string]bool{"a": true}, false},
 		{"test + operator with & after", "+&", true, map[string]bool{"a": true}, false},
 		{"test + operator with + after", "+", true, map[string]bool{"a": true}, false},
@@ -200,21 +126,5 @@ func TestParserXOR(t *testing.T) {
 		{"test simple !a + !b + (a or !b)", "!a+!b+(av!b)", false, map[string]bool{"a": true, "b": true}, true},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			lexer := NewLexer(test.expression)
-			tokens, _ := lexer.Tokenize()
-			parser := NewParser(tokens)
-
-			expr, err := parser.Parse()
-
-			if test.isError {
-				assert.NotNil(err, test.name)
-			} else {
-				assert.Nil(err)
-				result := expr.Eval(test.variables)
-				assert.Equal(result, test.result, test.name)
-			}
-		})
-	}
+	runTestCases(t, tests)
 }
