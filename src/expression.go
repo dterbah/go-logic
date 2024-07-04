@@ -37,13 +37,14 @@ func (notExpr *NotExpression) Eval(variables map[string]bool) bool {
 }
 
 func (notExpr *NotExpression) Simplify() Expression {
-	// Morgan laws
 	if value, ok := notExpr.expr.(*OrExpression); ok {
-		return NewAndExpression(NewNotExpression(value.left), NewNotExpression(value.right))
+		// De Morgan's law: !(a || b) => !a && !b
+		return NewAndExpression(NewNotExpression(value.left), NewNotExpression(value.right)).Simplify()
 	}
 
 	if value, ok := notExpr.expr.(*AndExpression); ok {
-		return NewOrExpression(NewNotExpression(value.left), NewNotExpression(value.right))
+		// De Morgan's law: !(a && b) => !a || !b
+		return NewOrExpression(NewNotExpression(value.left), NewNotExpression(value.right)).Simplify()
 	}
 
 	return notExpr
@@ -121,21 +122,21 @@ func (orExpr *OrExpression) Eval(variables map[string]bool) bool {
 }
 
 func (orExpr *OrExpression) Simplify() Expression {
-	// Idempotence
-	if orExpr.right.equal(orExpr.left) {
-		return orExpr.right
+	// Idempotence: a || a = a
+	if orExpr.left.equal(orExpr.right) {
+		return orExpr.left.Simplify()
 	}
 
-	// Identity
+	// Identity: a || false = a
 	if value, ok := orExpr.right.(*NumberExpression); ok && value.value == 0 {
-		return orExpr.left
+		return orExpr.left.Simplify()
 	}
 
 	if value, ok := orExpr.left.(*NumberExpression); ok && value.value == 0 {
-		return orExpr.right
+		return orExpr.right.Simplify()
 	}
 
-	// Domination
+	// Domination: a || true = true
 	if value, ok := orExpr.right.(*NumberExpression); ok && value.value == 1 {
 		return NewNumberExpression(1)
 	}
@@ -144,7 +145,7 @@ func (orExpr *OrExpression) Simplify() Expression {
 		return NewNumberExpression(1)
 	}
 
-	// Complementarity
+	// Complementarity: a || !a = true
 	if value, ok := orExpr.right.(*NotExpression); ok && value.expr.equal(orExpr.left) {
 		return NewNumberExpression(1)
 	}
@@ -153,7 +154,15 @@ func (orExpr *OrExpression) Simplify() Expression {
 		return NewNumberExpression(1)
 	}
 
-	return NewOrExpression(orExpr.left.Simplify(), orExpr.right.Simplify())
+	// Absorption: a || (a && b) = a
+	if value, ok := orExpr.right.(*AndExpression); ok && orExpr.left.equal(value.left) {
+		return orExpr.left.Simplify()
+	}
+
+	return &OrExpression{
+		left:  orExpr.left.Simplify(),
+		right: orExpr.right.Simplify(),
+	}
 }
 
 func (orExpr OrExpression) String() string {
@@ -192,21 +201,21 @@ func (andExpr *AndExpression) Eval(variables map[string]bool) bool {
 }
 
 func (andExpr *AndExpression) Simplify() Expression {
-	// Idempotence
-	if andExpr.right.equal(andExpr.left) {
-		return andExpr.right
+	// Idempotence: a && a = a
+	if andExpr.left.equal(andExpr.right) {
+		return andExpr.left.Simplify()
 	}
 
-	// Identity
+	// Identity: a && true = a
 	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 1 {
-		return andExpr.left
+		return andExpr.left.Simplify()
 	}
 
 	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 1 {
-		return andExpr.right
+		return andExpr.right.Simplify()
 	}
 
-	// Domination
+	// Domination: a && false = false
 	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 0 {
 		return NewNumberExpression(0)
 	}
@@ -215,7 +224,7 @@ func (andExpr *AndExpression) Simplify() Expression {
 		return NewNumberExpression(0)
 	}
 
-	// Complementarity
+	// Complementarity: a && !a = false
 	if value, ok := andExpr.right.(*NotExpression); ok && value.expr.equal(andExpr.left) {
 		return NewNumberExpression(0)
 	}
@@ -224,7 +233,22 @@ func (andExpr *AndExpression) Simplify() Expression {
 		return NewNumberExpression(0)
 	}
 
-	return NewAndExpression(andExpr.left.Simplify(), andExpr.right.Simplify()).Simplify()
+	// Absorption: a && (a || b) = a
+	if value, ok := andExpr.right.(*OrExpression); ok && andExpr.left.equal(value.left) {
+		return andExpr.left.Simplify()
+	}
+
+	left := andExpr.left.Simplify()
+	right := andExpr.right.Simplify()
+
+	if left.equal(right) {
+		return left
+	}
+
+	return &AndExpression{
+		left:  andExpr.left.Simplify(),
+		right: andExpr.right.Simplify(),
+	}
 }
 
 func (andExpr AndExpression) String() string {
