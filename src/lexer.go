@@ -22,6 +22,7 @@ const (
 	LPAREN            // (
 	RPAREN            // )
 	IMPLIES           // ->
+	NUMBER            // 1, 0
 )
 
 // Defines the Token struct
@@ -86,6 +87,9 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 		} else if isXOROperator(char) {
 			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
 			lexer.pos++
+		} else if isNumber(char) {
+			lexer.tokens.Add(Token{Type: NUMBER, Value: string(char)})
+			lexer.pos++
 		} else if char == '-' {
 			lexer.pos++
 			if lexer.input[lexer.pos] != '>' {
@@ -122,6 +126,10 @@ func isNotOperator(char byte) bool {
 
 func isXOROperator(char byte) bool {
 	return char == '+'
+}
+
+func isNumber(char byte) bool {
+	return char == '0' || char == '1'
 }
 
 /*

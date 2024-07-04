@@ -2,6 +2,7 @@ package logic
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/dterbah/gods/list"
 )
@@ -30,6 +31,8 @@ func (parser *Parser) Parse() (Expression, error) {
 		return parser.parseNot()
 	} else if token.Is(LPAREN) {
 		return parser.parseExpression()
+	} else if token.Is(NUMBER) {
+		return parser.parseNumber(token)
 	} else {
 		return nil, fmt.Errorf("a logic expression should not begin with a %s", token.Value)
 	}
@@ -40,6 +43,13 @@ Parse VAR boolean expression
 */
 func (parser *Parser) parseVar(token Token) (Expression, error) {
 	expr := NewVarExpression(token.Value)
+	parser.pos++
+	return parser.parseOperator(expr)
+}
+
+func (parser *Parser) parseNumber(token Token) (Expression, error) {
+	value, _ := strconv.Atoi(token.Value)
+	expr := NewNumberExpression(value)
 	parser.pos++
 	return parser.parseOperator(expr)
 }
@@ -60,6 +70,10 @@ func (parser *Parser) parseNot() (Expression, error) {
 	} else if nextToken.Is(LPAREN) {
 		expr, err = parser.parseExpression()
 		expr = NewNotExpression(expr)
+	} else if nextToken.Is(NUMBER) {
+		value, _ := strconv.Atoi(nextToken.Value)
+		expr = NewNotExpression(NewNotExpression(NewNumberExpression(value)))
+		parser.pos++
 	} else {
 		return nil, fmt.Errorf("you should have a variable or a ( after a not operator")
 	}
@@ -85,6 +99,8 @@ func (parser *Parser) parseExpression() (Expression, error) {
 		expr, err = parser.parseVar(nextToken)
 	} else if nextToken.Is(NOT) {
 		expr, err = parser.parseNot()
+	} else if nextToken.Is(NUMBER) {
+		expr, err = parser.parseNumber(nextToken)
 	} else {
 		return nil, fmt.Errorf("you should have a variable or a ! after a (")
 	}

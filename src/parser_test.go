@@ -128,3 +128,13 @@ func TestParserXOR(t *testing.T) {
 
 	runTestCases(t, tests)
 }
+
+func TestParserNumber(t *testing.T) {
+	tests := []testCase{
+		{"test simple 0 + 1", "0+1", false, map[string]bool{}, true},
+		{"test 1 operator with 1 after", "11", true, map[string]bool{}, false},
+		{"test 1 operator with 0 after", "10", true, map[string]bool{"a": true}, false},
+	}
+
+	runTestCases(t, tests)
+}

@@ -11,6 +11,8 @@ type Expression interface {
 	Eval(variables map[string]bool) bool
 	String() string
 	ToDot(builder *strings.Builder, parentID string)
+	Simplify() Expression
+	equal(expr Expression) bool
 }
 
 // Not Expression API
@@ -22,8 +24,20 @@ func NewNotExpression(expr Expression) *NotExpression {
 	return &NotExpression{expr: expr}
 }
 
+func (notExpr NotExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*NotExpression); ok {
+		return value.expr.equal(notExpr.expr)
+	}
+
+	return false
+}
+
 func (notExpr *NotExpression) Eval(variables map[string]bool) bool {
 	return !notExpr.expr.Eval(variables)
+}
+
+func (notExpr *NotExpression) Simplify() Expression {
+	return notExpr
 }
 
 func (notExprt NotExpression) String() string {
@@ -48,8 +62,20 @@ func NewVarExpression(variable string) *VarExpression {
 	return &VarExpression{variable: variable}
 }
 
+func (varExpr VarExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*VarExpression); ok {
+		return value.variable == varExpr.variable
+	}
+
+	return false
+}
+
 func (varExpr *VarExpression) Eval(variables map[string]bool) bool {
 	return variables[varExpr.variable]
+}
+
+func (varExpr *VarExpression) Simplify() Expression {
+	return varExpr
 }
 
 func (varExpr VarExpression) String() string {
@@ -73,8 +99,25 @@ func NewOrExpression(left, right Expression) *OrExpression {
 	return &OrExpression{left: left, right: right}
 }
 
+func (orExpr OrExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*OrExpression); ok {
+		return value.left.equal(orExpr.left) && value.right.equal(orExpr.right)
+	}
+
+	return false
+}
+
 func (orExpr *OrExpression) Eval(variables map[string]bool) bool {
 	return orExpr.left.Eval(variables) || orExpr.right.Eval(variables)
+}
+
+func (orExpr *OrExpression) Simplify() Expression {
+	// Idempotence
+	if orExpr.right.equal(orExpr.left) {
+		return orExpr.right
+	}
+
+	return orExpr
 }
 
 func (orExpr OrExpression) String() string {
@@ -100,8 +143,24 @@ func NewAndExpression(left, right Expression) *AndExpression {
 	return &AndExpression{left: left, right: right}
 }
 
+func (andExpr AndExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*AndExpression); ok {
+		return value.left.equal(andExpr.left) && value.right.equal(andExpr.right)
+	}
+
+	return false
+}
+
 func (andExpr *AndExpression) Eval(variables map[string]bool) bool {
 	return andExpr.left.Eval(variables) && andExpr.right.Eval(variables)
+}
+
+func (andExpr *AndExpression) Simplify() Expression {
+	// Idempotence
+	if andExpr.right.equal(andExpr.left) {
+		return andExpr.right
+	}
+	return andExpr
 }
 
 func (andExpr AndExpression) String() string {
@@ -127,11 +186,23 @@ func NewImpliesExpression(left, right Expression) *ImpliesExpression {
 	return &ImpliesExpression{left: left, right: right}
 }
 
+func (impliesExpression ImpliesExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*ImpliesExpression); ok {
+		return value.left.equal(impliesExpression.left) && value.right.equal(impliesExpression.right)
+	}
+
+	return false
+}
+
 func (impliesExpr *ImpliesExpression) Eval(variables map[string]bool) bool {
 	left := impliesExpr.left.Eval(variables)
 	right := impliesExpr.right.Eval(variables)
 
 	return !left || right
+}
+
+func (impliesExpr *ImpliesExpression) Simplify() Expression {
+	return impliesExpr
 }
 
 func (impliesExpr ImpliesExpression) String() string {
@@ -157,8 +228,20 @@ func NewXORExpression(left, right Expression) *XORExpression {
 	return &XORExpression{left: left, right: right}
 }
 
+func (xorExpr XORExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*XORExpression); ok {
+		return value.left.equal(xorExpr.left) && value.right.equal(xorExpr.right)
+	}
+
+	return false
+}
+
 func (xorExpr *XORExpression) Eval(variables map[string]bool) bool {
 	return xorExpr.left.Eval(variables) != xorExpr.right.Eval(variables)
+}
+
+func (xorExpr *XORExpression) Simplify() Expression {
+	return xorExpr
 }
 
 func (xorExpr XORExpression) String() string {
@@ -173,4 +256,34 @@ func (xorExpr *XORExpression) ToDot(builder *strings.Builder, parentID string) {
 	}
 	xorExpr.left.ToDot(builder, nodeID)
 	xorExpr.right.ToDot(builder, nodeID)
+}
+
+// Number expression API
+type NumberExpression struct {
+	Expression
+	value int
+}
+
+func NewNumberExpression(value int) *NumberExpression {
+	return &NumberExpression{value: value}
+}
+
+func (nbrExpr *NumberExpression) Eval(variables map[string]bool) bool {
+	return nbrExpr.value == 1
+}
+
+func (nbrExpr *NumberExpression) Simplify() Expression {
+	return nbrExpr
+}
+
+func (nbrExpr NumberExpression) String() string {
+	return fmt.Sprintf("%d", nbrExpr.value)
+}
+
+func (nbrExpr *NumberExpression) ToDot(builder *strings.Builder, parentID string) {
+	nodeID := fmt.Sprintf("number_%d", nbrExpr.value)
+	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"%d\"];\n", nodeID, nbrExpr.value))
+	if parentID != "" {
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
+	}
 }
