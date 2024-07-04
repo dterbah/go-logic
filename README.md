@@ -43,9 +43,9 @@ Here is an overview of the syntax for the different boolean operator
 You can use this command using the command `go-logic`. There is multiple options you
 can use to have different outputs
 
-| Command | Description                                      | Usage                | Default value | Required |
-| ------- | ------------------------------------------------ | -------------------- | ------------- | -------- |
-| -e      | Use to define the expression you want to analyze | go-logic -e="a+b"    | None          | ✅       |
-| -t      | Use to output the truth table of the expression  | go-logic -e="a" -t   | True          | ❌       |
-| -g      | Use to output a DOT graph of your expression     | go-logic -e="a^1" -g | False         | ❌       |
-| -s      | Use to simplify the current expression           | go-logic -e="a+b" -s | False         | ❌       |
+| Command | Description                                         | Usage                | Default value | Required |
+| ------- | --------------------------------------------------- | -------------------- | ------------- | -------- |
+| -e      | Define the expression you want to analyze           | go-logic -e="a+b"    | None          | ✅       |
+| -t      | Create and output the truth table of the expression | go-logic -e="a" -t   | True          | ❌       |
+| -g      | Create a DOT graph of your expression               | go-logic -e="a^1" -g | False         | ❌       |
+| -s      | Simplify the current expression                     | go-logic -e="a+b" -s | False         | ❌       |
