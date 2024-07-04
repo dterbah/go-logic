@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+const DOT_FORMAT = "\"%s\" -> \"%s\";\n"
+
 type Expression interface {
 	Eval(variables map[string]bool) bool
 	String() string
@@ -32,7 +34,7 @@ func (notExpr *NotExpression) ToDot(builder *strings.Builder, parentID string) {
 	nodeID := fmt.Sprintf("not_%p", notExpr)
 	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"NOT\"];\n", nodeID))
 	if parentID != "" {
-		builder.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", parentID, nodeID))
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
 	notExpr.expr.ToDot(builder, nodeID)
 }
@@ -58,7 +60,7 @@ func (varExpr *VarExpression) ToDot(builder *strings.Builder, parentID string) {
 	nodeID := fmt.Sprintf("var_%s", varExpr.variable)
 	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"%s\"];\n", nodeID, varExpr.variable))
 	if parentID != "" {
-		builder.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", parentID, nodeID))
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
 }
 
@@ -83,7 +85,7 @@ func (orExpr *OrExpression) ToDot(builder *strings.Builder, parentID string) {
 	nodeID := fmt.Sprintf("or_%p", orExpr)
 	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"OR\"];\n", nodeID))
 	if parentID != "" {
-		builder.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", parentID, nodeID))
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
 	orExpr.left.ToDot(builder, nodeID)
 	orExpr.right.ToDot(builder, nodeID)
@@ -110,7 +112,7 @@ func (andExpr *AndExpression) ToDot(builder *strings.Builder, parentID string) {
 	nodeID := fmt.Sprintf("and_%p", andExpr)
 	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"AND\"];\n", nodeID))
 	if parentID != "" {
-		builder.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", parentID, nodeID))
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
 	andExpr.left.ToDot(builder, nodeID)
 	andExpr.right.ToDot(builder, nodeID)
@@ -140,7 +142,7 @@ func (impliesExpr *ImpliesExpression) ToDot(builder *strings.Builder, parentID s
 	nodeID := fmt.Sprintf("implies_%p", impliesExpr)
 	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"IMPLIES\"];\n", nodeID))
 	if parentID != "" {
-		builder.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", parentID, nodeID))
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
 	impliesExpr.left.ToDot(builder, nodeID)
 	impliesExpr.right.ToDot(builder, nodeID)
@@ -167,7 +169,7 @@ func (xorExpr *XORExpression) ToDot(builder *strings.Builder, parentID string) {
 	nodeID := fmt.Sprintf("xor_%p", xorExpr)
 	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"XOR\"];\n", nodeID))
 	if parentID != "" {
-		builder.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", parentID, nodeID))
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
 	xorExpr.left.ToDot(builder, nodeID)
 	xorExpr.right.ToDot(builder, nodeID)

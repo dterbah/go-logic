@@ -68,13 +68,13 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 			continue
 		}
 
-		if char == '&' || char == '.' || char == '^' {
+		if isAndOperator(char) {
 			lexer.tokens.Add(Token{Type: AND, Value: "AND"})
 			lexer.pos++
-		} else if char == '|' || char == 'v' { // todo, v is not working
+		} else if isOrOperator(char) { // todo, v is not working
 			lexer.tokens.Add(Token{Type: OR, Value: "OR"})
 			lexer.pos++
-		} else if char == '!' {
+		} else if isNotOperator(char) {
 			lexer.tokens.Add(Token{Type: NOT, Value: "NOT"})
 			lexer.pos++
 		} else if char == '(' {
@@ -83,7 +83,7 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 		} else if char == ')' {
 			lexer.tokens.Add(Token{Type: RPAREN, Value: ")"})
 			lexer.pos++
-		} else if char == '+' {
+		} else if isXOROperator(char) {
 			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
 			lexer.pos++
 		} else if char == '-' {
@@ -105,6 +105,23 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 	}
 
 	return lexer.tokens, nil
+}
+
+// Private functions
+func isAndOperator(char byte) bool {
+	return char == '&' || char == '.' || char == '^'
+}
+
+func isOrOperator(char byte) bool {
+	return char == '|' || char == 'v'
+}
+
+func isNotOperator(char byte) bool {
+	return char == '!'
+}
+
+func isXOROperator(char byte) bool {
+	return char == '+'
 }
 
 /*
