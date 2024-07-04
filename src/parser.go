@@ -16,6 +16,8 @@ func NewParser(tokens list.List[Token]) *Parser {
 	return &Parser{tokens: tokens}
 }
 
+// --- State machine --- //
+
 /*
 Return the expression associated to the tokens
 */
@@ -33,6 +35,9 @@ func (parser *Parser) Parse() (Expression, error) {
 	}
 }
 
+/*
+Parse VAR boolean expression
+*/
 func (parser *Parser) parseVar(token Token) (Expression, error) {
 	// either OR, AND or XOR
 	expr := NewVarExpression(token.Value)
@@ -43,6 +48,8 @@ func (parser *Parser) parseVar(token Token) (Expression, error) {
 		return expr, nil
 	} else if nextToken.Is(AND) {
 		return parser.parseAnd(expr)
+	} else if nextToken.Is(OR) {
+		return parser.parseOr(expr)
 	} else if nextToken.Is(RPAREN) {
 		return expr, nil
 	} else {
@@ -50,6 +57,9 @@ func (parser *Parser) parseVar(token Token) (Expression, error) {
 	}
 }
 
+/*
+Parse NOT boolean expression
+*/
 func (parser *Parser) parseNot() (Expression, error) {
 	parser.pos++
 	nextToken := parser.peekToken()
@@ -67,6 +77,9 @@ func (parser *Parser) parseNot() (Expression, error) {
 	}
 }
 
+/*
+Parse AND boolean expression
+*/
 func (parser *Parser) parseAnd(left Expression) (Expression, error) {
 	parser.pos++
 	nextToken := parser.peekToken()
@@ -77,6 +90,9 @@ func (parser *Parser) parseAnd(left Expression) (Expression, error) {
 	} else if nextToken.Is(NOT) {
 		expr, err := parser.parseNot()
 		return NewAndExpression(left, expr), err
+	} else if nextToken.Is(LPAREN) {
+		expr, err := parser.parseExpression()
+		return NewAndExpression(left, expr), err
 	} else if nextToken.Is(EOF) {
 		return nil, fmt.Errorf("you should have either a variable, a !, or a ( after a and operator")
 	} else {
@@ -84,6 +100,29 @@ func (parser *Parser) parseAnd(left Expression) (Expression, error) {
 	}
 }
 
+func (parser *Parser) parseOr(left Expression) (Expression, error) {
+	parser.pos++
+	nextToken := parser.peekToken()
+
+	if nextToken.Is(VAR) {
+		expr, err := parser.parseVar(nextToken)
+		return NewOrExpression(left, expr), err
+	} else if nextToken.Is(LPAREN) {
+		expr, err := parser.parseExpression()
+		return NewOrExpression(left, expr), err
+	} else if nextToken.Is(NOT) {
+		expr, err := parser.parseNot()
+		return NewOrExpression(left, expr), err
+	} else if nextToken.Is(EOF) {
+		return nil, fmt.Errorf("you should have either a variable or a ( after a or operator")
+	} else {
+		return nil, fmt.Errorf("you should not have a %s after a or operator", nextToken.Value)
+	}
+}
+
+/*
+Parse boolean expression between parenthesis
+*/
 func (parser *Parser) parseExpression() (Expression, error) {
 	parser.pos++
 	nextToken := parser.peekToken()

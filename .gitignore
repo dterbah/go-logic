@@ -2,3 +2,4 @@ a.out
 coverage*
 .DS_Store
 main
+.vscode
