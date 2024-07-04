@@ -37,6 +37,15 @@ func (notExpr *NotExpression) Eval(variables map[string]bool) bool {
 }
 
 func (notExpr *NotExpression) Simplify() Expression {
+	// Morgan laws
+	if value, ok := notExpr.expr.(*OrExpression); ok {
+		return NewAndExpression(NewNotExpression(value.left), NewNotExpression(value.right))
+	}
+
+	if value, ok := notExpr.expr.(*AndExpression); ok {
+		return NewOrExpression(NewNotExpression(value.left), NewNotExpression(value.right))
+	}
+
 	return notExpr
 }
 
