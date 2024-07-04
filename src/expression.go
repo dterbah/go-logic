@@ -71,3 +71,16 @@ func (impliesExpr *ImpliesExpression) Eval(variables map[string]bool) bool {
 
 	return !left || right
 }
+
+// XOR Expression API
+type XORExpression struct {
+	left, right Expression
+}
+
+func NewXORExpression(left, right Expression) *XORExpression {
+	return &XORExpression{left: left, right: right}
+}
+
+func (xorExpr *XORExpression) Eval(variables map[string]bool) bool {
+	return xorExpr.left.Eval(variables) != xorExpr.right.Eval(variables)
+}

@@ -85,6 +85,7 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 			lexer.pos++
 		} else if char == '+' {
 			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
+			lexer.pos++
 		} else if char == '-' {
 			lexer.pos++
 			if lexer.input[lexer.pos] != '>' {

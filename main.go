@@ -26,8 +26,14 @@ func main() {
 	logicExpression := flag.String("e", "", "Logic expression to evaluate")
 	generateGraph := flag.Bool("g", false, "Generate the grap representation of the expression")
 	generateTruthTable := flag.Bool("t", false, "Generate truth table")
+	printHelp := flag.Bool("h", false, "Display list of operator")
 
 	flag.Parse()
+
+	if *printHelp {
+		fmt.Println("Display help")
+		return
+	}
 
 	if *logicExpression == "" {
 		fmt.Println("The -e option is required.")
@@ -53,7 +59,7 @@ func main() {
 	}
 
 	variables := make(map[string]bool)
-	variables["a"] = true
+	variables["a"] = false
 	variables["b"] = false
 	fmt.Println(result.Eval(variables))
 

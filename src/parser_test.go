@@ -71,7 +71,7 @@ func TestParseAnd(t *testing.T) {
 		{"test and operator with | after", "&|", true, map[string]bool{"a": true}, false},
 		{"test and operator with ) after", "&)", true, map[string]bool{"a": true}, false},
 		{"test simple a and b", "a^b", false, map[string]bool{"a": false, "b": true}, false},
-		{"test simple a and b 2", "a^b", false, map[string]bool{"a": false, "b": true}, false},
+		{"test simple a and b 2", "a^b", false, map[string]bool{"a": true, "b": true}, true},
 		{"test simple !a and b", "!a^b", false, map[string]bool{"a": false, "b": true}, true},
 		{"test simple !a and !b", "!a^!b", false, map[string]bool{"a": false, "b": true}, false},
 		{"test (a and !b)", "(a^!b)", false, map[string]bool{"a": false, "b": true}, false},
@@ -112,10 +112,51 @@ func TestParseOr(t *testing.T) {
 		{"test or operator with | after", "v|", true, map[string]bool{"a": true}, false},
 		{"test or operator with ) after", "v)", true, map[string]bool{"a": true}, false},
 		{"test simple a or b", "avb", false, map[string]bool{"a": false, "b": true}, true},
-		{"test simple a or b 2", "avb", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple a or b 2", "avb", false, map[string]bool{"a": false, "b": false}, false},
 		{"test simple !a or b ", "!avb", false, map[string]bool{"a": false, "b": true}, true},
 		{"test simple !a or !b", "!av!b", false, map[string]bool{"a": true, "b": true}, false},
 		{"test simple !a or !b or (a or !b)", "!av!bv(av!b)", false, map[string]bool{"a": true, "b": true}, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			lexer := NewLexer(test.expression)
+			tokens, _ := lexer.Tokenize()
+			parser := NewParser(tokens)
+
+			expr, err := parser.Parse()
+
+			if test.isError {
+				assert.NotNil(err, test.name)
+			} else {
+				assert.Nil(err)
+				result := expr.Eval(test.variables)
+				assert.Equal(result, test.result, test.name)
+			}
+		})
+	}
+}
+
+func TestParseImplies(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		name       string
+		expression string
+		isError    bool
+		variables  map[string]bool
+		result     bool
+	}{
+		{"test simple a -> a", "a->a", false, map[string]bool{"a": true}, true},
+		{"test -> operator with & after", "->&", true, map[string]bool{"a": true}, false},
+		{"test -> operator with -> after", "->->", true, map[string]bool{"a": true}, false},
+		{"test -> operator with | after", "->|", true, map[string]bool{"a": true}, false},
+		{"test -> operator with ) after", "->)", true, map[string]bool{"a": true}, false},
+		{"test simple a -> b", "a->b", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple a -> b 2", "a->b", false, map[string]bool{"a": true, "b": false}, false},
+		{"test simple !a -> b ", "!a->b", false, map[string]bool{"a": false, "b": true}, true},
+		{"test simple !a -> !b", "!a->!b", false, map[string]bool{"a": true, "b": true}, true},
+		{"test simple !a -> !b -> (a or !b)", "!av!bv(av!b)", false, map[string]bool{"a": true, "b": true}, true},
 	}
 
 	for _, test := range tests {
