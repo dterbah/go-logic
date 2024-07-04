@@ -290,7 +290,7 @@ func (impliesExpr *ImpliesExpression) Eval(variables map[string]bool) bool {
 }
 
 func (impliesExpr *ImpliesExpression) Simplify() Expression {
-	return impliesExpr
+	return NewOrExpression(NewNotExpression(impliesExpr.left), impliesExpr.right)
 }
 
 func (impliesExpr ImpliesExpression) String() string {
