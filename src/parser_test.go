@@ -56,6 +56,10 @@ func TestParseNot(t *testing.T) {
 		{"test not operator with | after", "!|", true, map[string]bool{"a": true}, false},
 		{"test not operator with ) after", "!)", true, map[string]bool{"a": true}, false},
 		{"test simple not operation", "!a", false, map[string]bool{"a": false}, true},
+		{"test not operation with parenthesis", "!(avb)", false, map[string]bool{"a": false, "b": false}, true},
+		{"test not operation with 1 value", "!1", false, map[string]bool{}, false},
+		{"test not operation with 0 value", "!0", false, map[string]bool{}, true},
+		{"test not operation with an error after the not", "!(av)", true, map[string]bool{}, true},
 	}
 
 	runTestCases(t, tests)
@@ -64,6 +68,7 @@ func TestParseNot(t *testing.T) {
 func TestParseAnd(t *testing.T) {
 	tests := []testCase{
 		{"test simple a and a", "a^a", false, map[string]bool{"a": true}, true},
+		{"test bad expression a and a ^", "a^a^", true, map[string]bool{"a": true}, true},
 		{"test and operator with & after", "&&", true, map[string]bool{"a": true}, false},
 		{"test and operator with -> after", "&->", true, map[string]bool{"a": true}, false},
 		{"test and operator with | after", "&|", true, map[string]bool{"a": true}, false},
@@ -98,6 +103,7 @@ func TestParseOr(t *testing.T) {
 func TestParseImplies(t *testing.T) {
 	tests := []testCase{
 		{"test simple a -> a", "a->a", false, map[string]bool{"a": true}, true},
+		{"test bad expression a -> a ->", "a->a->", true, map[string]bool{"a": true}, true},
 		{"test -> operator with & after", "->&", true, map[string]bool{"a": true}, false},
 		{"test -> operator with -> after", "->->", true, map[string]bool{"a": true}, false},
 		{"test -> operator with | after", "->|", true, map[string]bool{"a": true}, false},
@@ -115,6 +121,7 @@ func TestParseImplies(t *testing.T) {
 func TestParserXOR(t *testing.T) {
 	tests := []testCase{
 		{"test simple a + a", "a+a", false, map[string]bool{"a": true}, false},
+		{"test bad expression a + a +", "a+a+", true, map[string]bool{"a": true}, false},
 		{"test + operator with & after", "+&", true, map[string]bool{"a": true}, false},
 		{"test + operator with + after", "+", true, map[string]bool{"a": true}, false},
 		{"test + operator with | after", "+|", true, map[string]bool{"a": true}, false},
@@ -124,6 +131,19 @@ func TestParserXOR(t *testing.T) {
 		{"test simple !a + b ", "!a+b", false, map[string]bool{"a": false, "b": true}, false},
 		{"test simple !a + !b", "!a+!b", false, map[string]bool{"a": true, "b": false}, true},
 		{"test simple !a + !b + (a or !b)", "!a+!b+(av!b)", false, map[string]bool{"a": true, "b": true}, true},
+	}
+
+	runTestCases(t, tests)
+}
+
+func TestParserExpression(t *testing.T) {
+	tests := []testCase{
+		{"test expression (1)", "(1)", false, map[string]bool{}, true},
+		{"test expression !(a)", "!(a)", false, map[string]bool{"a": false}, true},
+		{"test expression !((a))", "!((a))", false, map[string]bool{"a": false}, true},
+		{"test expression (!a)", "(!a)", false, map[string]bool{"a": false}, true},
+		{"test expression without closing right parenthesis !((a)", "!((a)", true, map[string]bool{}, true},
+		{"test expression with invalid char after a left parenthesis", "(+)", true, map[string]bool{}, true},
 	}
 
 	runTestCases(t, tests)

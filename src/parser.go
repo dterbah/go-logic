@@ -72,7 +72,7 @@ func (parser *Parser) parseNot() (Expression, error) {
 		expr = NewNotExpression(expr)
 	} else if nextToken.Is(NUMBER) {
 		value, _ := strconv.Atoi(nextToken.Value)
-		expr = NewNotExpression(NewNotExpression(NewNumberExpression(value)))
+		expr = NewNotExpression(NewNumberExpression(value))
 		parser.pos++
 	} else {
 		return nil, fmt.Errorf("you should have a variable or a ( after a not operator")
@@ -101,6 +101,8 @@ func (parser *Parser) parseExpression() (Expression, error) {
 		expr, err = parser.parseNot()
 	} else if nextToken.Is(NUMBER) {
 		expr, err = parser.parseNumber(nextToken)
+	} else if nextToken.Is(LPAREN) {
+		expr, err = parser.parseExpression()
 	} else {
 		return nil, fmt.Errorf("you should have a variable or a ! after a (")
 	}

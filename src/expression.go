@@ -51,7 +51,7 @@ func (notExpr *NotExpression) Simplify() Expression {
 }
 
 func (notExprt NotExpression) String() string {
-	return fmt.Sprintf("! %s", notExprt.expr)
+	return fmt.Sprintf("!%s", notExprt.expr)
 }
 
 func (notExpr *NotExpression) ToDot(builder *strings.Builder, parentID string) {
@@ -166,7 +166,7 @@ func (orExpr *OrExpression) Simplify() Expression {
 }
 
 func (orExpr OrExpression) String() string {
-	return fmt.Sprintf("%s v %s", orExpr.left, orExpr.right)
+	return fmt.Sprintf("%sv%s", orExpr.left, orExpr.right)
 }
 
 func (orExpr *OrExpression) ToDot(builder *strings.Builder, parentID string) {
@@ -304,11 +304,11 @@ func (impliesExpr *ImpliesExpression) Eval(variables map[string]bool) bool {
 }
 
 func (impliesExpr *ImpliesExpression) Simplify() Expression {
-	return NewOrExpression(NewNotExpression(impliesExpr.left), impliesExpr.right)
+	return NewOrExpression(NewNotExpression(impliesExpr.left), impliesExpr.right).Simplify()
 }
 
 func (impliesExpr ImpliesExpression) String() string {
-	return fmt.Sprintf("%s -> %s", impliesExpr.left, impliesExpr.right)
+	return fmt.Sprintf("%s->%s", impliesExpr.left, impliesExpr.right)
 }
 
 func (impliesExpr *ImpliesExpression) ToDot(builder *strings.Builder, parentID string) {
@@ -347,7 +347,7 @@ func (xorExpr *XORExpression) Simplify() Expression {
 }
 
 func (xorExpr XORExpression) String() string {
-	return fmt.Sprintf("%s ⊕ %s", xorExpr.left, xorExpr.right)
+	return fmt.Sprintf("%s⊕%s", xorExpr.left, xorExpr.right)
 }
 
 func (xorExpr *XORExpression) ToDot(builder *strings.Builder, parentID string) {

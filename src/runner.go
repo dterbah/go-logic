@@ -21,17 +21,15 @@ Struct that will execute the main program
 */
 type Runner struct {
 	input              string
-	displayHelp        bool
 	generateGraph      bool
 	truthTable         bool
 	simplifyExpression bool
 }
 
-func NewRunner(input string, displayHelp bool, generateGraph bool, generateTruthTable bool, simplifyExpression bool) *Runner {
+func NewRunner(input string, generateGraph bool, generateTruthTable bool, simplifyExpression bool) *Runner {
 	return &Runner{input: input,
 		generateGraph:      generateGraph,
 		truthTable:         generateTruthTable,
-		displayHelp:        displayHelp,
 		simplifyExpression: simplifyExpression,
 	}
 }
@@ -41,9 +39,6 @@ Run the program
 */
 func (runner Runner) Run() {
 	var simplifiedExpr Expression
-	if runner.displayHelp {
-		runner.help()
-	}
 
 	lexer := NewLexer(runner.input)
 	tokens, err := lexer.Tokenize()
@@ -100,10 +95,6 @@ func (runner Runner) Run() {
 			fmt.Println("✅ Graph created !")
 		}
 	}
-}
-
-func (runner Runner) help() {
-
 }
 
 func exportDotGraph(dotGraph string) error {

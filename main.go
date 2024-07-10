@@ -26,7 +26,6 @@ func main() {
 	generateGraph := flag.Bool("g", false, "Generate the grap representation of the expression")
 	generateTruthTable := flag.Bool("t", true, "Generate truth table")
 	simplifyExpression := flag.Bool("s", false, "Simplify the expression")
-	printHelp := flag.Bool("h", false, "Display list of operator")
 	flag.Parse()
 
 	if *logicExpression == "" {
@@ -35,6 +34,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	runner := logic.NewRunner(*logicExpression, *printHelp, *generateGraph, *generateTruthTable, *simplifyExpression)
+	fmt.Println(*simplifyExpression)
+
+	runner := logic.NewRunner(*logicExpression, *generateGraph, *generateTruthTable, *simplifyExpression)
 	runner.Run()
 }
