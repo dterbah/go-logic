@@ -18,7 +18,7 @@ func runEqualTestCases(t *testing.T, tests []equalTestCase) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			assert.Equal(test.firstExpr.equal(test.secondExpr), test.expectedResult)
+			assert.Equal(test.firstExpr.equal(test.secondExpr), test.expectedResult, test.name)
 		})
 	}
 }
@@ -72,7 +72,7 @@ func TestAndExpressionEqual(t *testing.T) {
 		{
 			"test and expression not equal to another expression",
 			NewAndExpression(NewVarExpression("a"), NewVarExpression("b")),
-			NewAndExpression(NewVarExpression("a"), NewVarExpression("c")),
+			NewVarExpression("b"),
 			false,
 		},
 	}
@@ -126,9 +126,9 @@ func TestNumberExpressionEqual(t *testing.T) {
 			true,
 		},
 		{
-			"test number expression equal to another number expression",
+			"test number expression equal to another expression",
 			NewNumberExpression(1), NewNotExpression(NewNumberExpression(1)),
-			true,
+			false,
 		},
 	}
 

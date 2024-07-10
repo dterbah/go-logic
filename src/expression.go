@@ -343,6 +343,42 @@ func (xorExpr *XORExpression) Eval(variables map[string]bool) bool {
 }
 
 func (xorExpr *XORExpression) Simplify() Expression {
+	// a + 0 --> a, 0 + a --> a
+	if value, ok := xorExpr.left.(*NumberExpression); ok {
+		if value.value == 0 {
+			return xorExpr.right
+		}
+
+		return NewNotExpression(xorExpr.right).Simplify()
+	}
+
+	if value, ok := xorExpr.right.(*NumberExpression); ok {
+		if value.value == 0 {
+			return xorExpr.left
+		}
+
+		return NewNotExpression(xorExpr.left).Simplify()
+	}
+
+	// a + a --> 0
+	if xorExpr.right.equal(xorExpr.left) {
+		return NewNumberExpression(0)
+	}
+
+	// a + (a+b) --> b
+	if value, ok := xorExpr.right.(*XORExpression); ok {
+		if xorExpr.left.equal(value.left) {
+			return value.right.Simplify()
+		}
+
+		// (a+b)+(a+c)
+		if left, leftOK := xorExpr.left.(*XORExpression); leftOK {
+			if left.left.equal(value.left) {
+				return NewXORExpression(left.right, value.right).Simplify()
+			}
+		}
+	}
+
 	return xorExpr
 }
 
