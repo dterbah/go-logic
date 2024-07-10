@@ -216,20 +216,12 @@ func (andExpr *AndExpression) Simplify() Expression {
 	}
 
 	// Domination: a && false = false
-	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 0 {
-		return NewNumberExpression(0)
-	}
-
-	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 0 {
+	if andExpr.isDomination() {
 		return NewNumberExpression(0)
 	}
 
 	// Complementarity: a && !a = false
-	if value, ok := andExpr.right.(*NotExpression); ok && value.expr.equal(andExpr.left) {
-		return NewNumberExpression(0)
-	}
-
-	if value, ok := andExpr.left.(*NotExpression); ok && value.expr.equal(andExpr.right) {
+	if andExpr.isComplementarity() {
 		return NewNumberExpression(0)
 	}
 
@@ -249,6 +241,28 @@ func (andExpr *AndExpression) Simplify() Expression {
 		left:  andExpr.left.Simplify(),
 		right: andExpr.right.Simplify(),
 	}
+}
+
+func (andExpr AndExpression) isComplementarity() bool {
+	if value, ok := andExpr.right.(*NotExpression); ok && value.expr.equal(andExpr.left) {
+		return true
+	} else if value, ok := andExpr.left.(*NotExpression); ok && value.expr.equal(andExpr.right) {
+		return true
+	}
+
+	return false
+}
+
+func (andExpr AndExpression) isDomination() bool {
+	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 0 {
+		return true
+	}
+
+	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 0 {
+		return true
+	}
+
+	return false
 }
 
 func (andExpr AndExpression) String() string {
