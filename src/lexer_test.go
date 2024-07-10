@@ -69,3 +69,12 @@ func TestString(t *testing.T) {
 
 	assert.Equal("AND", token.String())
 }
+
+func TestContainsToken(t *testing.T) {
+	assert := assert.New(t)
+	lexer := NewLexer("a&b")
+	tokens, _ := lexer.Tokenize()
+
+	assert.True(tokens.Contains(Token{Type: VAR, Value: "a"}))
+	assert.False(tokens.Contains(Token{Type: VAR, Value: "c"}))
+}
