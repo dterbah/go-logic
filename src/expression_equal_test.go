@@ -83,7 +83,7 @@ func TestAndExpressionEqual(t *testing.T) {
 func TestImpliesExpressionEqual(t *testing.T) {
 	tests := []equalTestCase{
 		{
-			"test implies expression equal to another and expression",
+			"test implies expression equal to another implies expression",
 			NewImpliesExpression(NewVarExpression("a"), NewVarExpression("b")),
 			NewImpliesExpression(NewVarExpression("a"), NewVarExpression("b")),
 			true,
@@ -99,10 +99,10 @@ func TestImpliesExpressionEqual(t *testing.T) {
 	runEqualTestCases(t, tests)
 }
 
-func NewXORExpressionEqual(t *testing.T) {
+func TestXORExpressionEqual(t *testing.T) {
 	tests := []equalTestCase{
 		{
-			"test xor expression equal to another and expression",
+			"test xor expression equal to another xor expression",
 			NewXORExpression(NewVarExpression("a"), NewVarExpression("b")),
 			NewXORExpression(NewVarExpression("a"), NewVarExpression("b")),
 			true,
@@ -112,6 +112,23 @@ func NewXORExpressionEqual(t *testing.T) {
 			NewXORExpression(NewVarExpression("a"), NewVarExpression("b")),
 			NewAndExpression(NewVarExpression("a"), NewVarExpression("c")),
 			false,
+		},
+	}
+
+	runEqualTestCases(t, tests)
+}
+
+func TestNumberExpressionEqual(t *testing.T) {
+	tests := []equalTestCase{
+		{
+			"test number expression equal to another number expression",
+			NewNumberExpression(1), NewNumberExpression(1),
+			true,
+		},
+		{
+			"test number expression equal to another number expression",
+			NewNumberExpression(1), NewNotExpression(NewNumberExpression(1)),
+			true,
 		},
 	}
 
