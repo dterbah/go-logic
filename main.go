@@ -34,8 +34,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(*simplifyExpression)
-
 	runner := logic.NewRunner(*logicExpression, *generateGraph, *generateTruthTable, *simplifyExpression)
 	runner.Run()
 }

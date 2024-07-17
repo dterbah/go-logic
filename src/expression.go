@@ -134,46 +134,48 @@ func (orExpr *OrExpression) Eval(variables map[string]bool) bool {
 }
 
 func (orExpr *OrExpression) Simplify() Expression {
+	left := orExpr.left.Simplify()
+	right := orExpr.right.Simplify()
 	// Idempotence: a || a = a
-	if orExpr.left.equal(orExpr.right) {
-		return orExpr.left.Simplify()
+	if left.equal(right) {
+		return left.Simplify()
 	}
 
 	// Identity: a || false = a
-	if value, ok := orExpr.right.(*NumberExpression); ok && value.value == 0 {
-		return orExpr.left.Simplify()
+	if value, ok := right.(*NumberExpression); ok && value.value == 0 {
+		return left.Simplify()
 	}
 
-	if value, ok := orExpr.left.(*NumberExpression); ok && value.value == 0 {
-		return orExpr.right.Simplify()
+	if value, ok := left.(*NumberExpression); ok && value.value == 0 {
+		return right.Simplify()
 	}
 
 	// Domination: a || true = true
-	if value, ok := orExpr.right.(*NumberExpression); ok && value.value == 1 {
+	if value, ok := right.(*NumberExpression); ok && value.value == 1 {
 		return NewNumberExpression(1)
 	}
 
-	if value, ok := orExpr.left.(*NumberExpression); ok && value.value == 1 {
+	if value, ok := left.(*NumberExpression); ok && value.value == 1 {
 		return NewNumberExpression(1)
 	}
 
 	// Complementarity: a || !a = true
-	if value, ok := orExpr.right.(*NotExpression); ok && value.expr.equal(orExpr.left) {
+	if value, ok := right.(*NotExpression); ok && value.expr.equal(left) {
 		return NewNumberExpression(1)
 	}
 
-	if value, ok := orExpr.left.(*NotExpression); ok && value.expr.equal(orExpr.right) {
+	if value, ok := left.(*NotExpression); ok && value.expr.equal(right) {
 		return NewNumberExpression(1)
 	}
 
 	// Absorption: a || (a && b) = a
-	if value, ok := orExpr.right.(*AndExpression); ok && orExpr.left.equal(value.left) {
-		return orExpr.left.Simplify()
+	if value, ok := right.(*AndExpression); ok && left.equal(value.left) {
+		return left.Simplify()
 	}
 
 	return &OrExpression{
-		left:  orExpr.left.Simplify(),
-		right: orExpr.right.Simplify(),
+		left:  left.Simplify(),
+		right: right.Simplify(),
 	}
 }
 
@@ -213,64 +215,64 @@ func (andExpr *AndExpression) Eval(variables map[string]bool) bool {
 }
 
 func (andExpr *AndExpression) Simplify() Expression {
+	left := andExpr.left.Simplify()
+	right := andExpr.right.Simplify()
+
 	// Idempotence: a && a = a
-	if andExpr.left.equal(andExpr.right) {
+	if left.equal(right) {
 		return andExpr.left.Simplify()
 	}
 
 	// Identity: a && true = a
-	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 1 {
-		return andExpr.left.Simplify()
+	if value, ok := right.(*NumberExpression); ok && value.value == 1 {
+		return left.Simplify()
 	}
 
-	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 1 {
-		return andExpr.right.Simplify()
+	if value, ok := left.(*NumberExpression); ok && value.value == 1 {
+		return right.Simplify()
 	}
 
 	// Domination: a && false = false
-	if andExpr.isDomination() {
+	if andExpr.isDomination(left, right) {
 		return NewNumberExpression(0)
 	}
 
 	// Complementarity: a && !a = false
-	if andExpr.isComplementarity() {
+	if andExpr.isComplementarity(left, right) {
 		return NewNumberExpression(0)
 	}
 
 	// Absorption: a && (a || b) = a
-	if value, ok := andExpr.right.(*OrExpression); ok && andExpr.left.equal(value.left) {
-		return andExpr.left.Simplify()
+	if value, ok := right.(*OrExpression); ok && left.equal(value.left) {
+		return left.Simplify()
 	}
-
-	left := andExpr.left.Simplify()
-	right := andExpr.right.Simplify()
 
 	if left.equal(right) {
 		return left
 	}
 
 	return &AndExpression{
-		left:  andExpr.left.Simplify(),
-		right: andExpr.right.Simplify(),
+		left:  left.Simplify(),
+		right: right.Simplify(),
 	}
 }
 
-func (andExpr AndExpression) isComplementarity() bool {
-	if value, ok := andExpr.right.(*NotExpression); ok && value.expr.equal(andExpr.left) {
+func (andExpr AndExpression) isComplementarity(left, right Expression) bool {
+	if value, ok := right.(*NotExpression); ok && value.expr.equal(left) {
 		return true
-	} else if value, ok := andExpr.left.(*NotExpression); ok && value.expr.equal(andExpr.right) {
+	} else if value, ok := left.(*NotExpression); ok && value.expr.equal(right) {
 		return true
 	}
 
 	return false
 }
 
-func (andExpr AndExpression) isDomination() bool {
-	if value, ok := andExpr.right.(*NumberExpression); ok && value.value == 0 {
+func (andExpr AndExpression) isDomination(left, right Expression) bool {
+	if value, ok := right.(*NumberExpression); ok && value.value == 0 {
 		return true
 	}
 
-	if value, ok := andExpr.left.(*NumberExpression); ok && value.value == 0 {
+	if value, ok := left.(*NumberExpression); ok && value.value == 0 {
 		return true
 	}
 
