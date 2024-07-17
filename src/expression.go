@@ -393,7 +393,11 @@ func (xorExpr *XORExpression) Simplify() Expression {
 		}
 	}
 
-	return xorExpr
+	// p + q = (pvq)^!(p^q)
+	return NewAndExpression(
+		NewOrExpression(xorExpr.left, xorExpr.right),
+		NewNotExpression(NewAndExpression(xorExpr.left, xorExpr.right)),
+	).Simplify()
 }
 
 func (xorExpr XORExpression) String() string {
@@ -491,9 +495,11 @@ func (equivalenceExpr *EquivalenceExpression) Simplify() Expression {
 		}
 	}
 
+	left := equivalenceExpr.left.Simplify()
+	right := equivalenceExpr.right.Simplify()
 	expr := NewOrExpression(
-		NewAndExpression(equivalenceExpr.left, equivalenceExpr.right),
-		NewAndExpression(NewNotExpression(equivalenceExpr.left), NewNotExpression(equivalenceExpr.right)),
+		NewAndExpression(left.Simplify(), right.Simplify()),
+		NewAndExpression(NewNotExpression(left.Simplify()), NewNotExpression(right.Simplify())),
 	).Simplify()
 
 	return expr
