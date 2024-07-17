@@ -149,6 +149,14 @@ func TestParserExpression(t *testing.T) {
 	runTestCases(t, tests)
 }
 
+func TestParserEquivalence(t *testing.T) {
+	tests := []testCase{
+		{"test 1<->1", "1<->1", false, map[string]bool{}, true},
+	}
+
+	runTestCases(t, tests)
+}
+
 func TestParserNumber(t *testing.T) {
 	tests := []testCase{
 		{"test simple 0 + 1", "0+1", false, map[string]bool{}, true},

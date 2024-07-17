@@ -153,3 +153,7 @@ Return true if the current token has the type passed in parameter, else false
 func (token Token) Is(tokenType TokenType) bool {
 	return token.Type == tokenType
 }
+
+func (token Token) IsOperator() bool {
+	return token.Is(OR) || token.Is(AND) || token.Is(XOR) || token.Is(IMPLIES) || token.Is(EQUIVALENCE)
+}

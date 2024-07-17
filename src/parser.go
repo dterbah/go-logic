@@ -121,6 +121,11 @@ func (parser *Parser) parseAnd() (Expression, error) {
 func (parser *Parser) parseNot() (Expression, error) {
 	if parser.peekToken().Is(NOT) {
 		parser.pos++
+		next := parser.peekToken()
+		if next.IsOperator() {
+			return nil, fmt.Errorf("expected var or number after a not operator")
+		}
+
 		expr, err := parser.parseNot()
 		if err != nil {
 			return nil, err
@@ -138,9 +143,17 @@ func (parser *Parser) parsePrimary() (Expression, error) {
 	switch {
 	case token.Is(VAR):
 		parser.pos++
+		next := parser.peekToken()
+		if !next.IsOperator() && !next.Is(EOF) && !next.Is(RPAREN) {
+			return nil, fmt.Errorf("expected operator after a variable")
+		}
 		return NewVarExpression(token.Value), nil
 	case token.Is(NUMBER):
 		parser.pos++
+		next := parser.peekToken()
+		if !next.IsOperator() && !next.Is(EOF) && !next.Is(RPAREN) {
+			return nil, fmt.Errorf("expected operator after a number")
+		}
 		value, _ := strconv.Atoi(token.Value)
 		return NewNumberExpression(value), nil
 	case token.Is(LPAREN):
