@@ -7,6 +7,7 @@ import (
 	"os"
 
 	boolutil "github.com/dterbah/go-logic/src/utils"
+	"github.com/dterbah/gods/list/arraylist"
 	"github.com/dterbah/gods/set"
 	comparator "github.com/dterbah/gods/utils"
 	"github.com/goccy/go-graphviz"
@@ -145,15 +146,36 @@ func createTruthTableData(expr Expression, variables set.Set[string], simplified
 }
 
 func (runner Runner) generateTruthTable(expr Expression, variables set.Set[string], simplifiedExpr Expression) {
+	data := createTruthTableData(expr, variables, simplifiedExpr)
+	finalSimplifiedExpr := simplifiedExpr
+
+	// Check if the last column has only 1 or 0
+	col := arraylist.New(comparator.StringComparator)
+
+	for index, row := range data {
+		element := data[index][len(row)-1]
+		col.Add(element)
+	}
+
+	if col.Every(func(element string, index int) bool {
+		return element == "1"
+	}) {
+		finalSimplifiedExpr = NewNumberExpression(1)
+	}
+
+	if col.Every(func(element string, index int) bool {
+		return element == "0"
+	}) {
+		finalSimplifiedExpr = NewNumberExpression(0)
+	}
+
 	headers := append(variables.ToArray(), runner.input)
 	if simplifiedExpr != nil {
-		headers = append(headers, fmt.Sprintf("Simplified : %s", simplifiedExpr.String()))
+		headers = append(headers, fmt.Sprintf("Simplified : %s", finalSimplifiedExpr.String()))
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader(headers)
-
-	data := createTruthTableData(expr, variables, simplifiedExpr)
 
 	// display the truth table
 	for _, v := range data {
