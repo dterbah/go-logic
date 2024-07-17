@@ -30,13 +30,14 @@ go-logic ...
 
 Here is an overview of the syntax for the different boolean operator
 
-| Operator name | Description       | Syntax in Go Logic | Usages             |
-| ------------- | ----------------- | ------------------ | ------------------ |
-| NOT           | Negation operator | !                  | !a                 |
-| OR            | Or operator       | \|, v              | avb, a\|!b         |
-| AND           | And operator      | ^,&,.              | a^b, (!a.b).c, c&a |
-| XOR           | Xor operator      | +                  | a+b                |
-| IMPLIES       | Implie operator   | ->                 | a->b, b->!(a^v)    |
+| Operator name | Description          | Syntax in Go Logic | Usages             |
+| ------------- | -------------------- | ------------------ | ------------------ |
+| NOT           | Negation operator    | !                  | !a                 |
+| OR            | Or operator          | \|, v              | avb, a\|!b         |
+| AND           | And operator         | ^,&,.              | a^b, (!a.b).c, c&a |
+| XOR           | Xor operator         | +                  | a+b                |
+| IMPLIES       | Implie operator      | ->                 | a->b, b->!(a^v)    |
+| EQUIVALENCE   | Equivalence operator | <->                | a<->b, 1<->b       |
 
 ### CLI usage and options
 

@@ -55,6 +55,10 @@ func (notExpr *NotExpression) Simplify() Expression {
 		}
 	}
 
+	if value, ok := notExpr.expr.(*NotExpression); ok {
+		return value.expr.Simplify()
+	}
+
 	return notExpr
 }
 
@@ -274,7 +278,7 @@ func (andExpr AndExpression) isDomination() bool {
 }
 
 func (andExpr AndExpression) String() string {
-	return fmt.Sprintf("%s ^ %s", andExpr.left, andExpr.right)
+	return fmt.Sprintf("%s^%s", andExpr.left, andExpr.right)
 }
 
 func (andExpr *AndExpression) ToDot(builder *strings.Builder, parentID string) {
@@ -485,7 +489,6 @@ func (equivalenceExpr *EquivalenceExpression) Simplify() Expression {
 		}
 	}
 
-	// Utilisez la définition : A <-> B = (A AND B) OR (NOT A AND NOT B)
 	expr := NewOrExpression(
 		NewAndExpression(equivalenceExpr.left, equivalenceExpr.right),
 		NewAndExpression(NewNotExpression(equivalenceExpr.left), NewNotExpression(equivalenceExpr.right)),
