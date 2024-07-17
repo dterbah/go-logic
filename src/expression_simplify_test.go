@@ -40,6 +40,16 @@ func TestNotExpressionSimplify(t *testing.T) {
 			NewNotExpression(NewAndExpression(NewVarExpression("a"), NewVarExpression("b"))),
 			NewOrExpression(NewNotExpression(NewVarExpression("a")), NewNotExpression(NewVarExpression("b"))),
 		},
+		{
+			"test not expression simplify on !1",
+			NewNotExpression(NewNumberExpression(1)),
+			NewNumberExpression(0),
+		},
+		{
+			"test not expression simplify on !0",
+			NewNotExpression(NewNumberExpression(0)),
+			NewNumberExpression(1),
+		},
 	}
 
 	runSimplifyTestCases(t, tests)

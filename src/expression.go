@@ -47,6 +47,14 @@ func (notExpr *NotExpression) Simplify() Expression {
 		return NewOrExpression(NewNotExpression(value.left), NewNotExpression(value.right)).Simplify()
 	}
 
+	if value, ok := notExpr.expr.(*NumberExpression); ok {
+		if value.value == 0 {
+			return NewNumberExpression(1)
+		} else {
+			return NewNumberExpression(0)
+		}
+	}
+
 	return notExpr
 }
 
@@ -432,4 +440,70 @@ func (nbrExpr *NumberExpression) ToDot(builder *strings.Builder, parentID string
 	if parentID != "" {
 		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
 	}
+}
+
+// Equivalence expression API
+type EquivalenceExpression struct {
+	Expression
+	left, right Expression
+}
+
+func NewEquivalenceExpression(left, right Expression) *EquivalenceExpression {
+	return &EquivalenceExpression{left: left, right: right}
+}
+
+func (equivalenceExpr EquivalenceExpression) equal(expr Expression) bool {
+	if value, ok := expr.(*EquivalenceExpression); ok {
+		return value.left.equal(equivalenceExpr.left) && value.right.equal(equivalenceExpr.right)
+	}
+
+	return false
+}
+
+func (equivalenceExpr EquivalenceExpression) Eval(variables map[string]bool) bool {
+	return equivalenceExpr.left.Eval(variables) == equivalenceExpr.right.Eval(variables)
+}
+
+func (equivalenceExpr *EquivalenceExpression) Simplify() Expression {
+	if left, ok := equivalenceExpr.left.(*NumberExpression); ok {
+		if left.value == 1 {
+			// 1 <-> B => B
+			return equivalenceExpr.right.Simplify()
+		} else if left.value == 0 {
+			// 0 <-> B => !B
+			return NewNotExpression(equivalenceExpr.right).Simplify()
+		}
+	}
+
+	if right, ok := equivalenceExpr.right.(*NumberExpression); ok {
+		if right.value == 1 {
+			// A <-> 1 => A
+			return equivalenceExpr.left.Simplify()
+		} else if right.value == 0 {
+			// A <-> 0 => !A
+			return NewNotExpression(equivalenceExpr.left).Simplify()
+		}
+	}
+
+	// Utilisez la définition : A <-> B = (A AND B) OR (NOT A AND NOT B)
+	expr := NewOrExpression(
+		NewAndExpression(equivalenceExpr.left, equivalenceExpr.right),
+		NewAndExpression(NewNotExpression(equivalenceExpr.left), NewNotExpression(equivalenceExpr.right)),
+	).Simplify()
+
+	return expr
+}
+
+func (equivalenceExpression EquivalenceExpression) String() string {
+	return fmt.Sprintf("%s<->%s", equivalenceExpression.left, equivalenceExpression.right)
+}
+
+func (equivalenceExpr *EquivalenceExpression) ToDot(builder *strings.Builder, parentID string) {
+	nodeID := fmt.Sprintf("equ_%p", equivalenceExpr)
+	builder.WriteString(fmt.Sprintf("\"%s\" [label=\"EQU\"];\n", nodeID))
+	if parentID != "" {
+		builder.WriteString(fmt.Sprintf(DOT_FORMAT, parentID, nodeID))
+	}
+	equivalenceExpr.left.ToDot(builder, nodeID)
+	equivalenceExpr.right.ToDot(builder, nodeID)
 }

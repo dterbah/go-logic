@@ -12,17 +12,18 @@ type TokenType int
 
 // Alphabet of tokens
 const (
-	ILLEGAL TokenType = iota
-	EOF               // When no token available
-	VAR               // variable
-	AND               // &, ., ^
-	OR                // |, v
-	XOR               // +
-	NOT               // !
-	LPAREN            // (
-	RPAREN            // )
-	IMPLIES           // ->
-	NUMBER            // 1, 0
+	ILLEGAL     TokenType = iota
+	EOF                   // When no token available
+	VAR                   // variable
+	AND                   // &, ., ^
+	OR                    // |, v
+	XOR                   // +
+	NOT                   // !
+	LPAREN                // (
+	RPAREN                // )
+	IMPLIES               // ->
+	NUMBER                // 1, 0
+	EQUIVALENCE           // <->
 )
 
 // Defines the Token struct
@@ -83,6 +84,23 @@ func (lexer *Lexer) Tokenize() (list.List[Token], error) {
 			lexer.tokens.Add(Token{Type: XOR, Value: "XOR"})
 		case isNumber(char):
 			lexer.tokens.Add(Token{Type: NUMBER, Value: string(char)})
+		case char == '<':
+			if lexer.pos+2 >= len(lexer.input) {
+				return nil, fmt.Errorf("erorr when analyzing equivalence operator")
+			}
+			dash := lexer.input[lexer.pos+1]
+			rightArrow := lexer.input[lexer.pos+2]
+
+			if dash != '-' {
+				return nil, fmt.Errorf("error when analyzing equivalence operator, found %s, expected '-'", string(dash))
+			}
+
+			if rightArrow != '>' {
+				return nil, fmt.Errorf("error when analyzing equivalence operator, found %s, expected '>'", string(rightArrow))
+			}
+			lexer.pos += 2
+			lexer.tokens.Add(Token{Type: EQUIVALENCE, Value: "<->"})
+
 		case char == '-':
 			lexer.pos++
 			if lexer.pos >= len(lexer.input) || lexer.input[lexer.pos] != '>' {

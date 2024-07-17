@@ -155,6 +155,37 @@ func TestXORExpressionEval(t *testing.T) {
 	runEvalTestCases(t, tests)
 }
 
+func TestEquivalenceExpressionEval(t *testing.T) {
+	tests := []evalTestCase{
+		{
+			"test equivalence expression like 0<->0",
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			map[string]bool{"a": false, "b": false},
+			true,
+		},
+		{
+			"test equivalence expression like 0<->1",
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			map[string]bool{"a": false, "b": true},
+			false,
+		},
+		{
+			"test equivalence expression like 1<->0",
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			map[string]bool{"a": true, "b": false},
+			false,
+		},
+		{
+			"test equivalence expression like 1<->1",
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			map[string]bool{"a": true, "b": true},
+			true,
+		},
+	}
+
+	runEvalTestCases(t, tests)
+}
+
 func TestNumberExpressionEval(t *testing.T) {
 	tests := []evalTestCase{
 		{

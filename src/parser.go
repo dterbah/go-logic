@@ -158,6 +158,13 @@ func (parser *Parser) parseOperator(left Expression) (Expression, error) {
 				return nil, err
 			}
 			left = NewXORExpression(left, right)
+		case nextToken.Is(EQUIVALENCE):
+			parser.pos++
+			right, err := parser.Parse()
+			if err != nil {
+				return nil, err
+			}
+			left = NewEquivalenceExpression(left, right)
 		default:
 			return nil, fmt.Errorf("unexpected token %s", nextToken.Value)
 		}

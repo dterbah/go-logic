@@ -46,6 +46,9 @@ func TestTokenize(t *testing.T) {
 		{"test with valid implies operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: XOR, Value: "XOR"}, Token{Type: VAR, Value: "b"}), " a+b ", false},
 		{"test with empty input", nil, "", true},
 		{"test with numbers", arraylist.New(mockTokenCompare, Token{Type: NUMBER, Value: "1"}, Token{Type: XOR, Value: "XOR"}, Token{Type: NUMBER, Value: "1"}), " 1+1 ", false},
+		{"test bad equivalence operator (without -)", arraylist.New(mockTokenCompare), "a<b", true},
+		{"test bad equivalence operator (without >)", arraylist.New(mockTokenCompare), "a<-b", true},
+		{"tes equivalence operator", arraylist.New(mockTokenCompare, Token{Type: VAR, Value: "a"}, Token{Type: EQUIVALENCE, Value: "<->"}, Token{Type: VAR, Value: "a"}), "a<->a", false},
 	}
 
 	for _, test := range tests {

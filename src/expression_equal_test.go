@@ -126,8 +126,27 @@ func TestNumberExpressionEqual(t *testing.T) {
 			true,
 		},
 		{
-			"test number expression equal to another expression",
+			"test number expression not equal to another expression",
 			NewNumberExpression(1), NewNotExpression(NewNumberExpression(1)),
+			false,
+		},
+	}
+
+	runEqualTestCases(t, tests)
+}
+
+func TestEquivalenceExpressionEqual(t *testing.T) {
+	tests := []equalTestCase{
+		{
+			"test equivalence equal to another equivalence expression",
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			true,
+		},
+		{
+			"test equivalence not equal to another expression",
+			NewEquivalenceExpression(NewVarExpression("a"), NewVarExpression("b")),
+			NewNumberExpression(1),
 			false,
 		},
 	}
