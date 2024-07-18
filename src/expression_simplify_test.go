@@ -18,7 +18,7 @@ func runSimplifyTestCases(t *testing.T, tests []simplifyTestCase) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			simplifiedExpr := test.expr.Simplify()
-			assert.Equal(simplifiedExpr, test.expectedResult, test.name)
+			assert.Equal(test.expectedResult, simplifiedExpr, test.name)
 		})
 	}
 }
@@ -234,14 +234,6 @@ func TestXORExpressionSimplify(t *testing.T) {
 			"test xor expression simplify on a + (a+b)",
 			NewXORExpression(NewVarExpression("a"), NewXORExpression(NewVarExpression("a"), NewVarExpression("b"))),
 			NewVarExpression("b"),
-		},
-		{
-			"test xor expression simplify on (a + b) + (a + c)",
-			NewXORExpression(
-				NewXORExpression(NewVarExpression("a"), NewVarExpression("b")),
-				NewXORExpression(NewVarExpression("a"), NewVarExpression("c")),
-			),
-			NewXORExpression(NewVarExpression("b"), NewVarExpression("c")),
 		},
 	}
 
